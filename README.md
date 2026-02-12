@@ -2,15 +2,15 @@
 
 A professional, production-ready drone delivery management backend built with Node.js, TypeScript, and Express. This system provides comprehensive REST APIs for managing drone deliveries with JWT authentication, real-time tracking, and Google Maps visualization.
 
-## ⚡ Quick Start Links
+## Quick Start Links
 
-- 🚀 **[QUICK_START.md](QUICK_START.md)** - Start here! Fixed rate limits + tracking options
-- 📊 **Simple Tracking:** `http://localhost:3000/simple-tracking.html` (No Google Maps needed)
-- 🗺️ **Maps Tracking:** `http://localhost:3000/tracking.html` (Requires API key)
-- 🧪 **Test Maps API:** `http://localhost:3000/test-maps.html` (Verify API key)
-- 📐 **[FLOW_DIAGRAMS.md](FLOW_DIAGRAMS.md)** - Complete system architecture diagrams
+- **[QUICK_START.md](QUICK_START.md)** - Start here! Fixed rate limits + tracking options
+- **Simple Tracking:** `http://localhost:3000/simple-tracking.html` (No Google Maps needed)
+- **Maps Tracking:** `http://localhost:3000/tracking.html` (Requires API key)
+- **Test Maps API:** `http://localhost:3000/test-maps.html` (Verify API key)
+- **[FLOW_DIAGRAMS.md](FLOW_DIAGRAMS.md)** - Complete system architecture diagrams
 
-## 🚀 Features
+## Features
 
 - **JWT Authentication**: Self-signed JWT tokens with bearer authentication
 - **Role-Based Access**: Three user types (admin, enduser, drone) with specific permissions
@@ -25,7 +25,7 @@ A professional, production-ready drone delivery management backend built with No
 - **TypeScript**: Type-safe code with strict TypeScript configuration
 - **Multiple UIs**: API testing, simple tracking, and full map tracking interfaces
 
-## 📋 Table of Contents
+## Table of Contents
 
 - [Quick Start](#quick-start)
 - [Installation](#installation)
@@ -36,7 +36,7 @@ A professional, production-ready drone delivery management backend built with No
 - [Architecture](#architecture)
 - [License](#license)
 
-## 🚀 Quick Start
+## Quick Start
 
 Get up and running in 3 steps:
 
@@ -437,7 +437,7 @@ curl -X PUT http://localhost:3000/api/drone/order/status \
   -d '{"status": "delivered"}'
 ```
 
-## 🚧 Future Enhancements
+## Future Enhancements
 
 - [ ] Database integration (PostgreSQL/MongoDB)
 - [ ] WebSocket support for real-time updates
@@ -449,11 +449,11 @@ curl -X PUT http://localhost:3000/api/drone/order/status \
 - [ ] Monitoring and logging (Winston, Morgan)
 - [ ] Message queue integration (RabbitMQ, Kafka)
 
-## 📝 License
+## License
 
 MIT
 
-## 👥 Author
+## Author
 
 Backend Engineering Technical Assessment
 
