@@ -52,12 +52,12 @@ npm run dev
 ```
 
 The system comes with:
-- ✅ Pre-configured sample drones ready to work
-- ✅ Interactive web UI for testing
-- ✅ Complete REST API documentation
-- ✅ Comprehensive test suite
+- Pre-configured sample drones ready to work
+- Interactive web UI for testing
+- Complete REST API documentation
+- Comprehensive test suite
 
-## 🔧 Installation
+## Installation
 
 ### Prerequisites
 
@@ -104,7 +104,7 @@ Key configuration options in `.env`:
 | `RATE_LIMIT_WINDOW_MS` | Rate limit window | 900000 (15 min) |
 | `RATE_LIMIT_MAX_REQUESTS` | Max requests per window | 100 |
 
-## 🏃 Running the Application
+## Running the Application
 
 ### Development Mode
 
@@ -139,7 +139,7 @@ Once running, you can access:
 
 The web interface provides an easy way to test all API endpoints without using curl or Postman!
 
-## 📚 API Documentation
+## API Documentation
 
 ### Authentication
 
@@ -311,7 +311,7 @@ Authorization: Bearer <token>
 }
 ```
 
-## 🧪 Testing
+## Testing
 
 ### Run All Tests
 
@@ -329,12 +329,12 @@ npm run test:watch
 
 The project includes comprehensive test coverage:
 
-- ✅ Authentication tests
-- ✅ Drone endpoint tests
-- ✅ Enduser endpoint tests
-- ✅ Admin endpoint tests
-- ✅ Utility function tests
-- ✅ Integration tests
+- Authentication tests
+- Drone endpoint tests
+- Enduser endpoint tests
+- Admin endpoint tests
+- Utility function tests
+- Integration tests
 
 Coverage report is generated in the `coverage/` directory.
 
@@ -437,23 +437,7 @@ curl -X PUT http://localhost:3000/api/drone/order/status \
   -d '{"status": "delivered"}'
 ```
 
-## Future Enhancements
 
-- [ ] Database integration (PostgreSQL/MongoDB)
-- [ ] WebSocket support for real-time updates
-- [ ] GraphQL API
-- [ ] gRPC endpoints
-- [ ] Docker containerization
-- [ ] CI/CD pipeline
-- [ ] API documentation with Swagger/OpenAPI
-- [ ] Monitoring and logging (Winston, Morgan)
-- [ ] Message queue integration (RabbitMQ, Kafka)
-
-## License
-
-MIT
-
-## Author
 
 Backend Engineering Technical Assessment
 
