@@ -1,0 +1,576 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Google Maps API Diagnostic Test</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 40px;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 16px;
+            padding: 40px;
+            box-shadow: 0 15px 40px rgba(0,0,0,0.25);
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .subtitle {
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 1.1rem;
+        }
+
+        .test-section {
+            border: 2px solid #e0e0e0;
+            border-radius: 12px;
+            padding: 25px;
+            margin-bottom: 20px;
+            background: #f9f9f9;
+        }
+
+        .test-section h2 {
+            color: #555;
+            margin-bottom: 15px;
+            font-size: 1.3rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .status {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            margin-top: 10px;
+        }
+
+        .status.testing {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .status.success {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .status.error {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .message {
+            margin-top: 15px;
+            padding: 15px;
+            border-radius: 8px;
+            font-size: 0.95rem;
+            line-height: 1.6;
+        }
+
+        .message.info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border-left: 4px solid #17a2b8;
+        }
+
+        .message.success {
+            background: #d4edda;
+            color: #155724;
+            border-left: 4px solid #28a745;
+        }
+
+        .message.error {
+            background: #f8d7da;
+            color: #721c24;
+            border-left: 4px solid #dc3545;
+        }
+
+        .api-key-display {
+            background: #2d3748;
+            color: #68d391;
+            padding: 12px;
+            border-radius: 6px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.85rem;
+            word-break: break-all;
+            margin: 10px 0;
+        }
+
+        .fix-button {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 15px;
+            transition: all 0.3s;
+        }
+
+        .fix-button:hover {
+            background: #5568d3;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        ul {
+            margin: 15px 0;
+            padding-left: 25px;
+        }
+
+        li {
+            margin: 8px 0;
+            line-height: 1.6;
+        }
+
+        .loader {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            animation: spin 1s linear infinite;
+            display: inline-block;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        code {
+            background: #f4f4f4;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: 'Courier New', monospace;
+            color: #e83e8c;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>
+            🔍 Google Maps API Diagnostic Test
+        </h1>
+        <p class="subtitle">This page tests if your Google Maps API key is properly configured</p>
+
+        <!-- API Key Test -->
+        <div class="test-section">
+            <h2>📋 1. API Key Detection</h2>
+            <div id="keyTest">
+                <span class="status testing">
+                    <div class="loader"></div>
+                    Testing...
+                </span>
+            </div>
+        </div>
+
+        <!-- Maps JavaScript API Test -->
+        <div class="test-section">
+            <h2>🗺️ 2. Maps JavaScript API</h2>
+            <div id="mapsTest">
+                <span class="status testing">
+                    <div class="loader"></div>
+                    Testing...
+                </span>
+            </div>
+        </div>
+
+        <!-- Places API Test -->
+        <div class="test-section">
+            <h2>📍 3. Places API (Autocomplete)</h2>
+            <div id="placesTest">
+                <span class="status testing">
+                    <div class="loader"></div>
+                    Testing...
+                </span>
+            </div>
+        </div>
+
+        <!-- Geocoding API Test -->
+        <div class="test-section">
+            <h2>🌍 4. Geocoding API</h2>
+            <div id="geocodingTest">
+                <span class="status testing">
+                    <div class="loader"></div>
+                    Testing...
+                </span>
+            </div>
+        </div>
+
+        <!-- Directions API Test -->
+        <div class="test-section">
+            <h2>🧭 5. Directions API</h2>
+            <div id="directionsTest">
+                <span class="status testing">
+                    <div class="loader"></div>
+                    Testing...
+                </span>
+            </div>
+        </div>
+
+        <!-- Overall Result -->
+        <div class="test-section" style="border: 3px solid #667eea;">
+            <h2>🎯 Overall Result</h2>
+            <div id="overallResult">
+                <span class="status testing">
+                    <div class="loader"></div>
+                    Running tests...
+                </span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_KEY = 'AIzaSyAdlfTHUOg2PbRxoIDr78hCI9feJtWfnrU';
+        const results = {
+            key: false,
+            maps: false,
+            places: false,
+            geocoding: false,
+            directions: false
+        };
+
+        // Test 1: API Key Detection
+        function testAPIKey() {
+            const keyTestDiv = document.getElementById('keyTest');
+            
+            if (!API_KEY || API_KEY === 'YOUR_API_KEY' || API_KEY.length < 30) {
+                keyTestDiv.innerHTML = `
+                    <span class="status error">❌ Not Configured</span>
+                    <div class="message error">
+                        <strong>API Key Missing or Invalid</strong><br>
+                        Your API key appears to be missing or not properly set.<br>
+                        <div class="api-key-display">Current: ${API_KEY || 'NONE'}</div>
+                        Please check the script tag at the bottom of this page.
+                    </div>
+                `;
+                return false;
+            }
+
+            keyTestDiv.innerHTML = `
+                <span class="status success">✅ Key Detected</span>
+                <div class="message success">
+                    <strong>API Key Found</strong><br>
+                    <div class="api-key-display">${API_KEY}</div>
+                </div>
+            `;
+            results.key = true;
+            return true;
+        }
+
+        // Test 2: Maps JavaScript API
+        function testMapsAPI() {
+            const mapsTestDiv = document.getElementById('mapsTest');
+            
+            if (typeof google === 'undefined' || !google.maps) {
+                mapsTestDiv.innerHTML = `
+                    <span class="status error">❌ Failed</span>
+                    <div class="message error">
+                        <strong>Maps JavaScript API Not Loaded</strong><br>
+                        <strong>Causes:</strong>
+                        <ul>
+                            <li>Maps JavaScript API not enabled in Google Cloud Console</li>
+                            <li>API key restrictions blocking localhost</li>
+                            <li>Billing not set up</li>
+                            <li>Invalid API key</li>
+                        </ul>
+                        <strong>Fix:</strong> Enable "Maps JavaScript API" in Google Cloud Console
+                    </div>
+                `;
+                return false;
+            }
+
+            mapsTestDiv.innerHTML = `
+                <span class="status success">✅ Working</span>
+                <div class="message success">
+                    <strong>Maps JavaScript API Loaded Successfully</strong><br>
+                    Google Maps library is available and ready to use.
+                </div>
+            `;
+            results.maps = true;
+            return true;
+        }
+
+        // Test 3: Places API (Autocomplete)
+        function testPlacesAPI() {
+            const placesTestDiv = document.getElementById('placesTest');
+
+            if (!google || !google.maps || !google.maps.places) {
+                placesTestDiv.innerHTML = `
+                    <span class="status error">❌ Failed</span>
+                    <div class="message error">
+                        <strong>Places API Not Available</strong><br>
+                        The "places" library parameter is missing or Places API is not enabled.<br><br>
+                        <strong>This is causing your autocomplete error!</strong><br><br>
+                        <strong>Fix:</strong>
+                        <ul>
+                            <li>Enable "Places API" in Google Cloud Console</li>
+                            <li>Wait 2-3 minutes for activation</li>
+                            <li>Ensure script tag includes: <code>&libraries=places</code></li>
+                        </ul>
+                        <button class="fix-button" onclick="window.open('https://console.cloud.google.com/apis/library/places-backend.googleapis.com', '_blank')">
+                            🔧 Enable Places API
+                        </button>
+                    </div>
+                `;
+                return false;
+            }
+
+            // Try autocomplete service
+            const service = new google.maps.places.AutocompleteService();
+            service.getPlacePredictions({ input: 'New York' }, (predictions, status) => {
+                if (status === google.maps.places.PlacesServiceStatus.OK) {
+                    placesTestDiv.innerHTML = `
+                        <span class="status success">✅ Working</span>
+                        <div class="message success">
+                            <strong>Places API Working Perfectly!</strong><br>
+                            Autocomplete tested successfully with sample query "New York"<br>
+                            Found ${predictions.length} suggestions.
+                        </div>
+                    `;
+                    results.places = true;
+                    updateOverallResult();
+                } else {
+                    placesTestDiv.innerHTML = `
+                        <span class="status error">❌ Request Failed</span>
+                        <div class="message error">
+                            <strong>Places API Request Denied</strong><br>
+                            Status: <code>${status}</code><br><br>
+                            <strong>Common Causes:</strong>
+                            <ul>
+                                <li><strong>Places API not enabled</strong> in Google Cloud Console</li>
+                                <li>Billing account not linked</li>
+                                <li>API key restrictions too strict</li>
+                                <li>Over quota limit (unlikely for new keys)</li>
+                            </ul>
+                            <button class="fix-button" onclick="window.open('https://console.cloud.google.com/apis/library/places-backend.googleapis.com', '_blank')">
+                                🔧 Enable Places API
+                            </button>
+                            <button class="fix-button" onclick="window.open('https://console.cloud.google.com/billing', '_blank')">
+                                💳 Check Billing
+                            </button>
+                        </div>
+                    `;
+                    updateOverallResult();
+                }
+            });
+
+            placesTestDiv.innerHTML = `
+                <span class="status testing">
+                    <div class="loader"></div>
+                    Testing autocomplete service...
+                </span>
+            `;
+            return null; // Async result
+        }
+
+        // Test 4: Geocoding API
+        function testGeocodingAPI() {
+            const geocodingTestDiv = document.getElementById('geocodingTest');
+
+            if (!google || !google.maps || !google.maps.Geocoder) {
+                geocodingTestDiv.innerHTML = `
+                    <span class="status error">❌ Failed</span>
+                    <div class="message error">
+                        <strong>Geocoding Not Available</strong>
+                    </div>
+                `;
+                return false;
+            }
+
+            const geocoder = new google.maps.Geocoder();
+            geocoder.geocode({ address: 'New York, NY' }, (results, status) => {
+                if (status === 'OK') {
+                    geocodingTestDiv.innerHTML = `
+                        <span class="status success">✅ Working</span>
+                        <div class="message info">
+                            <strong>Geocoding API Working</strong><br>
+                            Optional but recommended for address conversion.
+                        </div>
+                    `;
+                    results.geocoding = true;
+                    updateOverallResult();
+                } else {
+                    geocodingTestDiv.innerHTML = `
+                        <span class="status error">❌ Failed</span>
+                        <div class="message error">
+                            <strong>Geocoding Request Failed</strong><br>
+                            Status: <code>${status}</code><br>
+                            Optional API - not critical for basic functionality.
+                        </div>
+                    `;
+                    updateOverallResult();
+                }
+            });
+
+            geocodingTestDiv.innerHTML = `
+                <span class="status testing">
+                    <div class="loader"></div>
+                    Testing geocoding service...
+                </span>
+            `;
+            return null;
+        }
+
+        // Test 5: Directions API
+        function testDirectionsAPI() {
+            const directionsTestDiv = document.getElementById('directionsTest');
+
+            if (!google || !google.maps || !google.maps.DirectionsService) {
+                directionsTestDiv.innerHTML = `
+                    <span class="status error">❌ Failed</span>
+                    <div class="message error">
+                        <strong>Directions Not Available</strong>
+                    </div>
+                `;
+                return false;
+            }
+
+            const service = new google.maps.DirectionsService();
+            service.route({
+                origin: 'New York, NY',
+                destination: 'Boston, MA',
+                travelMode: google.maps.TravelMode.DRIVING
+            }, (result, status) => {
+                if (status === 'OK') {
+                    directionsTestDiv.innerHTML = `
+                        <span class="status success">✅ Working</span>
+                        <div class="message info">
+                            <strong>Directions API Working</strong><br>
+                            Optional but recommended for route visualization.
+                        </div>
+                    `;
+                    results.directions = true;
+                    updateOverallResult();
+                } else {
+                    directionsTestDiv.innerHTML = `
+                        <span class="status error">❌ Failed</span>
+                        <div class="message error">
+                            <strong>Directions Request Failed</strong><br>
+                            Status: <code>${status}</code><br>
+                            Optional API - affects route line display.
+                        </div>
+                    `;
+                    updateOverallResult();
+                }
+            });
+
+            directionsTestDiv.innerHTML = `
+                <span class="status testing">
+                    <div class="loader"></div>
+                    Testing directions service...
+                </span>
+            `;
+            return null;
+        }
+
+        // Update Overall Result
+        function updateOverallResult() {
+            const overallDiv = document.getElementById('overallResult');
+            const criticalPassed = results.key && results.maps && results.places;
+
+            if (criticalPassed) {
+                overallDiv.innerHTML = `
+                    <span class="status success" style="font-size: 1.1rem;">✅ All Critical Tests Passed!</span>
+                    <div class="message success">
+                        <strong>🎉 Your Google Maps API is properly configured!</strong><br><br>
+                        <strong>Ready to use:</strong>
+                        <ul>
+                            <li>✅ Location search with autocomplete</li>
+                            <li>✅ Map display and markers</li>
+                            <li>✅ Route visualization</li>
+                        </ul>
+                        <strong>Next step:</strong> Go to <a href="http://localhost:3000/" style="color: #667eea; font-weight: 600;">http://localhost:3000/</a> and test the order placement!
+                    </div>
+                `;
+            } else {
+                const issues = [];
+                if (!results.key) issues.push('API Key missing/invalid');
+                if (!results.maps) issues.push('Maps JavaScript API not enabled');
+                if (!results.places) issues.push('Places API not enabled (CRITICAL)');
+
+                overallDiv.innerHTML = `
+                    <span class="status error" style="font-size: 1.1rem;">❌ Configuration Issues Found</span>
+                    <div class="message error">
+                        <strong>Please fix these issues:</strong>
+                        <ul>
+                            ${issues.map(issue => `<li>${issue}</li>`).join('')}
+                        </ul>
+                        <strong>Action Required:</strong><br>
+                        <button class="fix-button" onclick="window.open('https://console.cloud.google.com/apis/library', '_blank')">
+                            🔧 Go to Google Cloud Console
+                        </button>
+                        <button class="fix-button" onclick="window.open('FIX_GOOGLE_MAPS_ERROR.md', '_blank')">
+                            📖 Read Fix Guide
+                        </button>
+                    </div>
+                `;
+            }
+        }
+
+        // Run all tests when Google Maps loads
+        function initTests() {
+            testAPIKey();
+            testMapsAPI();
+            testPlacesAPI();
+            testGeocodingAPI();
+            testDirectionsAPI();
+        }
+
+        // Handle Google Maps load error
+        window.gm_authFailure = function() {
+            document.getElementById('keyTest').innerHTML = `
+                <span class="status error">❌ Authentication Failed</span>
+                <div class="message error">
+                    <strong>Google Maps Authentication Failure</strong><br>
+                    Your API key is invalid or has restrictions blocking this request.<br><br>
+                    <strong>Common causes:</strong>
+                    <ul>
+                        <li>Invalid API key</li>
+                        <li>HTTP referrer restrictions blocking localhost</li>
+                        <li>Billing account not linked</li>
+                    </ul>
+                    <button class="fix-button" onclick="window.open('https://console.cloud.google.com/apis/credentials', '_blank')">
+                        🔧 Check API Key Settings
+                    </button>
+                </div>
+            `;
+            updateOverallResult();
+        };
+    </script>
+
+    <!-- Load Google Maps API -->
+    <script async defer
+        src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAdlfTHUOg2PbRxoIDr78hCI9feJtWfnrU&libraries=places&callback=initTests"
+        onerror="document.getElementById('keyTest').innerHTML='<span class=\'status error\'>❌ Script Load Failed</span><div class=\'message error\'>Could not load Google Maps script. Check your internet connection or API key.</div>'">
+    </script>
+</body>
+</html>

@@ -1,0 +1,973 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Drone Delivery - Place Your Order</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+        }
+
+        header h1 {
+            font-size: 2.8rem;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 8px rgba(0,0,0,0.3);
+        }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 500px 1fr;
+            gap: 20px;
+        }
+
+        .card {
+            background: white;
+            border-radius: 16px;
+            padding: 30px;
+            box-shadow: 0 15px 40px rgba(0,0,0,0.25);
+        }
+
+        .card h2 {
+            color: #667eea;
+            margin-bottom: 25px;
+            font-size: 1.6rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #333;
+            font-size: 15px;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 14px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 15px;
+            transition: all 0.3s;
+        }
+
+        input:focus, select:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .search-input {
+            position: relative;
+        }
+
+        .search-input::before {
+            content: "🔍";
+            position: absolute;
+            left: 14px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 18px;
+        }
+
+        .search-input input {
+            padding-left: 45px;
+        }
+
+        button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 14px 28px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 15px;
+            font-weight: 700;
+            transition: all 0.3s;
+            width: 100%;
+            margin-top: 10px;
+        }
+
+        button:hover:not(:disabled) {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.5);
+        }
+
+        button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .user-info {
+            background: linear-gradient(135deg, #e7f3ff 0%, #f0e7ff 100%);
+            padding: 20px;
+            border-radius: 12px;
+            margin-top: 20px;
+            display: none;
+        }
+
+        .user-info.active {
+            display: block;
+        }
+
+        .user-badge {
+            display: inline-block;
+            padding: 6px 14px;
+            background: #667eea;
+            color: white;
+            border-radius: 16px;
+            font-size: 13px;
+            font-weight: 700;
+            margin-top: 8px;
+        }
+
+        #map {
+            width: 100%;
+            height: 720px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        .location-info {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            margin-top: 15px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .location-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+
+        .location-box {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 10px;
+            border-left: 4px solid #667eea;
+        }
+
+        .location-box.destination {
+            border-left-color: #f5576c;
+        }
+
+        .location-box h4 {
+            margin: 0 0 8px 0;
+            font-size: 14px;
+            color: #666;
+            text-transform: uppercase;
+        }
+
+        .location-box .address {
+            font-size: 14px;
+            color: #333;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .location-box .coords {
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            color: #999;
+        }
+
+        .distance-info {
+            background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+            color: white;
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+            font-weight: 700;
+        }
+
+        .toast {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            background: #28a745;
+            color: white;
+            padding: 18px 24px;
+            border-radius: 10px;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.3);
+            display: none;
+            animation: slideIn 0.4s ease-out;
+            z-index: 2000;
+            font-weight: 600;
+        }
+
+        @keyframes slideIn {
+            from { transform: translateX(400px); }
+            to { transform: translateX(0); }
+        }
+
+        .toast.error {
+            background: #dc3545;
+        }
+
+        .login-prompt {
+            text-align: center;
+            padding: 80px 20px;
+            color: #6c757d;
+        }
+
+        .login-prompt h3 {
+            font-size: 1.8rem;
+            margin-bottom: 15px;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        .instructions {
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+
+        .instructions strong {
+            color: #856404;
+        }
+
+        @media (max-width: 1024px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1> Drone Delivery Service</h1>
+            <p>Search your locations and place your order</p>
+        </header>
+
+        <div class="main-content">
+            <!-- Left Panel: Authentication & Location Search -->
+            <div>
+                <div class="card">
+                    <h2> Login</h2>
+                    <div id="loginForm">
+                        <div class="form-group">
+                            <label>Your Name</label>
+                            <input type="text" id="userName" placeholder="Enter your name">
+                        </div>
+                        <div class="form-group">
+                            <label>User Type</label>
+                            <select id="userType">
+                                <option value="enduser">Customer</option>
+                                <!-- <option value="drone">Drone Operator</option>
+                                <option value="admin">Administrator</option> -->
+                            </select>
+                        </div>
+                        <button onclick="login()">Login & Continue</button>
+                    </div>
+
+                    <div id="userInfo" class="user-info">
+                        <h3 style="margin-bottom: 10px; color: #667eea;">✅ Logged In</h3>
+                        <div><strong>Name:</strong> <span id="displayName"></span></div>
+                        <div><strong>Type:</strong> <span id="displayType" class="user-badge"></span></div>
+                        <button onclick="logout()" style="margin-top: 15px; background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);">Logout</button>
+                    </div>
+                </div>
+
+                <div class="card" style="margin-top: 20px;" id="locationSearchCard" class="hidden">
+                    <h2>📍 Search Locations</h2>
+                    
+                    <div class="instructions">
+                        <strong>How to order:</strong><br>
+                        1. Search for pickup location<br>
+                        2. Search for destination<br>
+                        3. Review the route on map<br>
+                        4. Click "Place Order"
+                    </div>
+
+                    <div class="form-group">
+                        <label>🔵 Pickup Location</label>
+                        <div style="display: flex; gap: 8px;">
+                            <div class="search-input" style="flex: 1;">
+                                <input type="text" id="pickupSearch" placeholder="Type city name..." onkeypress="handlePickupKeyPress(event)">
+                            </div>
+                            <button type="button" id="btnSetPickup" onclick="manualGeocodePickup()" style="padding: 8px 16px; background: #667eea; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 0.9rem;">
+                                <span id="pickupBtnText">📍 Set</span>
+                            </button>
+                        </div>
+                        <div id="pickupHelp" style="font-size: 0.85rem; color: #666; margin-top: 5px; display: none;">
+                            ⚠️ Click dropdown OR type location and click "📍 Set" button
+                        </div>
+                        <div id="pickupStatus" style="font-size: 0.85rem; color: #28a745; margin-top: 5px; display: none;">
+                            ✅ Location selected
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>🔴 Destination Location</label>
+                        <div style="display: flex; gap: 8px;">
+                            <div class="search-input" style="flex: 1;">
+                                <input type="text" id="destinationSearch" placeholder="Type city name..." onkeypress="handleDestKeyPress(event)">
+                            </div>
+                            <button type="button" id="btnSetDest" onclick="manualGeocodeDest()" style="padding: 8px 16px; background: #667eea; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 0.9rem;">
+                                <span id="destBtnText">📍 Set</span>
+                            </button>
+                        </div>
+                        <div id="destHelp" style="font-size: 0.85rem; color: #666; margin-top: 5px; display: none;">
+                            ⚠️ Click dropdown OR type location and click "📍 Set" button
+                        </div>
+                        <div id="destStatus" style="font-size: 0.85rem; color: #28a745; margin-top: 5px; display: none;">
+                            ✅ Location selected
+                        </div>
+                    </div>
+
+                    <div style="background: #d1ecf1; padding: 12px; border-radius: 8px; margin-bottom: 15px; font-size: 0.9rem; border-left: 4px solid #17a2b8;">
+                        💡 <strong>Quick Tip:</strong> Type location → Press <strong>Enter</strong> or click <strong>📍 Set</strong> button
+                    </div>
+
+                    <button onclick="submitOrder()" id="btnSubmitOrder" disabled style="position: relative;">
+                        <span id="btnText">Place Order</span>
+                    </button>
+                    <div id="buttonHint" style="text-align: center; margin-top: 8px; font-size: 0.85rem; color: #dc3545; display: block;">
+                        ⚠️ Select both locations from dropdown to enable
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Panel: Map & Location Info -->
+            <div class="card">
+                <h2> Delivery Map</h2>
+                
+                <div id="loginPrompt" class="login-prompt">
+                    <h3> Please Login First</h3>
+                    <p>Enter your details to access the delivery system</p>
+                </div>
+
+                <div id="mapContainer" class="hidden">
+                    <div id="map"></div>
+
+                    <div class="location-info" id="locationInfo" style="display: none;">
+                        <div class="location-row">
+                            <div class="location-box">
+                                <h4>📍 Pickup Location</h4>
+                                <div class="address" id="pickupAddress">Not selected</div>
+                                <div class="coords" id="pickupCoords">--</div>
+                            </div>
+                            <div class="location-box destination">
+                                <h4>🎯 Destination</h4>
+                                <div class="address" id="destinationAddress">Not selected</div>
+                                <div class="coords" id="destinationCoords">--</div>
+                            </div>
+                        </div>
+                        <div class="distance-info" id="distanceInfo" style="display: none;">
+                            <div>📏 Distance: <span id="distanceValue">--</span></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Toast Notification -->
+        <div id="successToast" class="toast"></div>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:3000/api';
+        let token = '';
+        let userType = '';
+        let userName = '';
+        
+        let map = null;
+        let pickupMarker = null;
+        let destinationMarker = null;
+        let directionsService = null;
+        let directionsRenderer = null;
+        let pickupAutocomplete = null;
+        let destinationAutocomplete = null;
+        
+        let pickupLocation = null;
+        let destinationLocation = null;
+
+        function showToast(message, type = 'success') {
+            const toast = document.getElementById('successToast');
+            toast.textContent = message;
+            toast.className = 'toast ' + (type === 'error' ? 'error' : '');
+            toast.style.display = 'block';
+            setTimeout(() => toast.style.display = 'none', 4000);
+        }
+
+        function initMap() {
+            // Initialize map centered on US
+            map = new google.maps.Map(document.getElementById('map'), {
+                center: { lat: 39.8283, lng: -98.5795 },
+                zoom: 4,
+                styles: [
+                    {
+                        featureType: "poi",
+                        elementType: "labels",
+                        stylers: [{ visibility: "off" }]
+                    }
+                ]
+            });
+
+            directionsService = new google.maps.DirectionsService();
+            directionsRenderer = new google.maps.DirectionsRenderer({
+                map: map,
+                suppressMarkers: true,
+                polylineOptions: {
+                    strokeColor: '#667eea',
+                    strokeWeight: 5
+                }
+            });
+
+            // Initialize autocomplete for pickup
+            pickupAutocomplete = new google.maps.places.Autocomplete(
+                document.getElementById('pickupSearch'),
+                { types: ['geocode'] }
+            );
+            
+            // Show help text when user starts typing
+            document.getElementById('pickupSearch').addEventListener('input', () => {
+                document.getElementById('pickupHelp').style.display = 'block';
+                document.getElementById('pickupStatus').style.display = 'none';
+            });
+            
+            pickupAutocomplete.addListener('place_changed', () => {
+                const place = pickupAutocomplete.getPlace();
+                if (!place.geometry) {
+                    showToast('Please select a valid location from dropdown', 'error');
+                    return;
+                }
+                
+                pickupLocation = {
+                    lat: place.geometry.location.lat(),
+                    lng: place.geometry.location.lng(),
+                    address: place.formatted_address
+                };
+                
+                // Show success feedback
+                document.getElementById('pickupHelp').style.display = 'none';
+                document.getElementById('pickupStatus').style.display = 'block';
+                
+                updatePickupMarker();
+                updateLocationDisplay();
+                checkCanSubmit();
+                
+                showToast('✅ Pickup location set: ' + place.formatted_address.split(',')[0]);
+            });
+
+            // Initialize autocomplete for destination
+            destinationAutocomplete = new google.maps.places.Autocomplete(
+                document.getElementById('destinationSearch'),
+                { types: ['geocode'] }
+            );
+            
+            // Show help text when user starts typing
+            document.getElementById('destinationSearch').addEventListener('input', () => {
+                document.getElementById('destHelp').style.display = 'block';
+                document.getElementById('destStatus').style.display = 'none';
+            });
+            
+            destinationAutocomplete.addListener('place_changed', () => {
+                const place = destinationAutocomplete.getPlace();
+                if (!place.geometry) {
+                    showToast('Please select a valid location from dropdown', 'error');
+                    return;
+                }
+                
+                destinationLocation = {
+                    lat: place.geometry.location.lat(),
+                    lng: place.geometry.location.lng(),
+                    address: place.formatted_address
+                };
+                
+                // Show success feedback
+                document.getElementById('destHelp').style.display = 'none';
+                document.getElementById('destStatus').style.display = 'block';
+                
+                updateDestinationMarker();
+                updateLocationDisplay();
+                checkCanSubmit();
+                
+                showToast('✅ Destination set: ' + place.formatted_address.split(',')[0]);
+            });
+
+            // Try to get user's current location
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(
+                    (position) => {
+                        const userPos = {
+                            lat: position.coords.latitude,
+                            lng: position.coords.longitude
+                        };
+                        map.setCenter(userPos);
+                        map.setZoom(12);
+                        
+                        // Add current location marker
+                        new google.maps.Marker({
+                            position: userPos,
+                            map: map,
+                            icon: {
+                                path: google.maps.SymbolPath.CIRCLE,
+                                scale: 8,
+                                fillColor: '#4285F4',
+                                fillOpacity: 1,
+                                strokeColor: 'white',
+                                strokeWeight: 2
+                            },
+                            title: 'Your Location'
+                        });
+                    },
+                    () => {
+                        console.log('Location access denied');
+                    }
+                );
+            }
+        }
+
+        function updatePickupMarker() {
+            if (pickupMarker) {
+                pickupMarker.setMap(null);
+            }
+            
+            pickupMarker = new google.maps.Marker({
+                position: { lat: pickupLocation.lat, lng: pickupLocation.lng },
+                map: map,
+                icon: {
+                    url: 'http://maps.google.com/mapfiles/ms/icons/blue-dot.png'
+                },
+                title: 'Pickup Location',
+                animation: google.maps.Animation.DROP
+            });
+            
+            map.panTo({ lat: pickupLocation.lat, lng: pickupLocation.lng });
+            map.setZoom(13);
+            
+            if (destinationLocation) {
+                calculateRoute();
+            }
+        }
+
+        function updateDestinationMarker() {
+            if (destinationMarker) {
+                destinationMarker.setMap(null);
+            }
+            
+            destinationMarker = new google.maps.Marker({
+                position: { lat: destinationLocation.lat, lng: destinationLocation.lng },
+                map: map,
+                icon: {
+                    url: 'http://maps.google.com/mapfiles/ms/icons/red-dot.png'
+                },
+                title: 'Destination',
+                animation: google.maps.Animation.DROP
+            });
+            
+            if (pickupLocation) {
+                calculateRoute();
+            }
+        }
+
+        function calculateRoute() {
+            if (!pickupLocation || !destinationLocation) return;
+
+            const request = {
+                origin: { lat: pickupLocation.lat, lng: pickupLocation.lng },
+                destination: { lat: destinationLocation.lat, lng: destinationLocation.lng },
+                travelMode: google.maps.TravelMode.DRIVING
+            };
+
+            directionsService.route(request, (result, status) => {
+                if (status === 'OK') {
+                    directionsRenderer.setDirections(result);
+                    
+                    // Show distance
+                    const distance = result.routes[0].legs[0].distance.text;
+                    document.getElementById('distanceValue').textContent = distance;
+                    document.getElementById('distanceInfo').style.display = 'block';
+                    
+                    // Fit bounds to show entire route
+                    const bounds = new google.maps.LatLngBounds();
+                    bounds.extend({ lat: pickupLocation.lat, lng: pickupLocation.lng });
+                    bounds.extend({ lat: destinationLocation.lat, lng: destinationLocation.lng });
+                    map.fitBounds(bounds);
+                }
+            });
+        }
+
+        function updateLocationDisplay() {
+            document.getElementById('locationInfo').style.display = 'block';
+            
+            if (pickupLocation) {
+                document.getElementById('pickupAddress').textContent = pickupLocation.address;
+                document.getElementById('pickupCoords').textContent = 
+                    `${pickupLocation.lat.toFixed(6)}, ${pickupLocation.lng.toFixed(6)}`;
+            }
+            
+            if (destinationLocation) {
+                document.getElementById('destinationAddress').textContent = destinationLocation.address;
+                document.getElementById('destinationCoords').textContent = 
+                    `${destinationLocation.lat.toFixed(6)}, ${destinationLocation.lng.toFixed(6)}`;
+            }
+        }
+
+        function checkCanSubmit() {
+            const canSubmit = pickupLocation && destinationLocation;
+            const btn = document.getElementById('btnSubmitOrder');
+            const hint = document.getElementById('buttonHint');
+            
+            btn.disabled = !canSubmit;
+            
+            if (canSubmit) {
+                hint.style.display = 'none';
+                btn.style.opacity = '1';
+                btn.style.cursor = 'pointer';
+            } else {
+                hint.style.display = 'block';
+                btn.style.opacity = '0.6';
+                btn.style.cursor = 'not-allowed';
+                
+                // Update hint text
+                if (!pickupLocation && !destinationLocation) {
+                    hint.textContent = '⚠️ Select both locations from dropdown to enable';
+                    hint.style.color = '#dc3545';
+                } else if (!pickupLocation) {
+                    hint.textContent = '⚠️ Select pickup location from dropdown';
+                    hint.style.color = '#ff9800';
+                } else if (!destinationLocation) {
+                    hint.textContent = '⚠️ Select destination location from dropdown';
+                    hint.style.color = '#ff9800';
+                }
+            }
+        }
+
+        async function login() {
+            userName = document.getElementById('userName').value.trim();
+            userType = document.getElementById('userType').value;
+
+            if (!userName) {
+                showToast('Please enter your name', 'error');
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_BASE}/auth/login`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name: userName, type: userType })
+                });
+
+                const data = await response.json();
+                
+                if (data.success) {
+                    token = data.data.token;
+                    
+                    // Update UI
+                    document.getElementById('loginForm').style.display = 'none';
+                    document.getElementById('userInfo').classList.add('active');
+                    document.getElementById('displayName').textContent = data.data.name;
+                    document.getElementById('displayType').textContent = data.data.type;
+                    
+                    // Show map and search
+                    document.getElementById('loginPrompt').classList.add('hidden');
+                    document.getElementById('mapContainer').classList.remove('hidden');
+                    document.getElementById('locationSearchCard').classList.remove('hidden');
+                    
+                    // Initialize map
+                    if (!map) {
+                        initMap();
+                    }
+                    
+                    showToast('✅ Login successful!');
+                } else {
+                    showToast('Login failed: ' + data.error, 'error');
+                }
+            } catch (error) {
+                showToast('Error: ' + error.message, 'error');
+            }
+        }
+
+        function logout() {
+            token = '';
+            userName = '';
+            userType = '';
+            pickupLocation = null;
+            destinationLocation = null;
+            
+            // Reset UI
+            document.getElementById('loginForm').style.display = 'block';
+            document.getElementById('userInfo').classList.remove('active');
+            document.getElementById('userName').value = '';
+            document.getElementById('pickupSearch').value = '';
+            document.getElementById('destinationSearch').value = '';
+            
+            // Reset status indicators
+            document.getElementById('pickupHelp').style.display = 'none';
+            document.getElementById('pickupStatus').style.display = 'none';
+            document.getElementById('destHelp').style.display = 'none';
+            document.getElementById('destStatus').style.display = 'none';
+            
+            // Hide map
+            document.getElementById('loginPrompt').classList.remove('hidden');
+            document.getElementById('mapContainer').classList.add('hidden');
+            document.getElementById('locationSearchCard').classList.add('hidden');
+            document.getElementById('locationInfo').style.display = 'none';
+            
+            // Clear markers
+            if (pickupMarker) pickupMarker.setMap(null);
+            if (destinationMarker) destinationMarker.setMap(null);
+            if (directionsRenderer) directionsRenderer.setDirections({routes: []});
+            
+            showToast('Logged out successfully');
+        }
+
+        // Manual geocode for pickup
+        async function manualGeocodePickup() {
+            const address = document.getElementById('pickupSearch').value.trim();
+            if (!address) {
+                showToast('Please enter a pickup location', 'error');
+                return;
+            }
+            
+            // Show loading
+            const btn = document.getElementById('btnSetPickup');
+            const btnText = document.getElementById('pickupBtnText');
+            btn.disabled = true;
+            btnText.textContent = '⏳ Loading...';
+            
+            try {
+                // Check if Google Maps is loaded
+                if (typeof google === 'undefined' || !google.maps || !google.maps.Geocoder) {
+                    showToast('❌ Google Maps not loaded. Refresh the page.', 'error');
+                    btn.disabled = false;
+                    btnText.textContent = '📍 Set';
+                    return;
+                }
+                
+                const geocoder = new google.maps.Geocoder();
+                geocoder.geocode({ address: address }, (results, status) => {
+                    // Reset button
+                    btn.disabled = false;
+                    btnText.textContent = '📍 Set';
+                    
+                    console.log('Geocode status:', status);
+                    console.log('Geocode results:', results);
+                    
+                    if (status === 'OK' && results[0]) {
+                        const place = results[0];
+                        pickupLocation = {
+                            lat: place.geometry.location.lat(),
+                            lng: place.geometry.location.lng(),
+                            address: place.formatted_address
+                        };
+                        
+                        console.log('Pickup location set:', pickupLocation);
+                        
+                        // Show success feedback
+                        document.getElementById('pickupHelp').style.display = 'none';
+                        document.getElementById('pickupStatus').style.display = 'block';
+                        document.getElementById('pickupSearch').value = place.formatted_address.split(',')[0];
+                        
+                        updatePickupMarker();
+                        updateLocationDisplay();
+                        checkCanSubmit();
+                        
+                        showToast('✅ Pickup: ' + place.formatted_address.split(',')[0]);
+                    } else if (status === 'ZERO_RESULTS') {
+                        showToast('❌ Location not found. Try: "Lahore, Pakistan"', 'error');
+                    } else if (status === 'REQUEST_DENIED') {
+                        showToast('❌ API Error: Geocoding API not enabled. Check console.', 'error');
+                        console.error('Enable Geocoding API: https://console.cloud.google.com/apis/library/geocoding-backend.googleapis.com');
+                    } else {
+                        showToast('❌ Geocoding failed: ' + status, 'error');
+                        console.error('Geocoding error:', status, results);
+                    }
+                });
+            } catch (error) {
+                btn.disabled = false;
+                btnText.textContent = '📍 Set';
+                showToast('Error: ' + error.message, 'error');
+                console.error('Geocoding exception:', error);
+            }
+        }
+        
+        // Manual geocode for destination
+        async function manualGeocodeDest() {
+            const address = document.getElementById('destinationSearch').value.trim();
+            if (!address) {
+                showToast('Please enter a destination location', 'error');
+                return;
+            }
+            
+            // Show loading
+            const btn = document.getElementById('btnSetDest');
+            const btnText = document.getElementById('destBtnText');
+            btn.disabled = true;
+            btnText.textContent = '⏳ Loading...';
+            
+            try {
+                // Check if Google Maps is loaded
+                if (typeof google === 'undefined' || !google.maps || !google.maps.Geocoder) {
+                    showToast('❌ Google Maps not loaded. Refresh the page.', 'error');
+                    btn.disabled = false;
+                    btnText.textContent = '📍 Set';
+                    return;
+                }
+                
+                const geocoder = new google.maps.Geocoder();
+                geocoder.geocode({ address: address }, (results, status) => {
+                    // Reset button
+                    btn.disabled = false;
+                    btnText.textContent = '📍 Set';
+                    
+                    console.log('Geocode status:', status);
+                    console.log('Geocode results:', results);
+                    
+                    if (status === 'OK' && results[0]) {
+                        const place = results[0];
+                        destinationLocation = {
+                            lat: place.geometry.location.lat(),
+                            lng: place.geometry.location.lng(),
+                            address: place.formatted_address
+                        };
+                        
+                        console.log('Destination location set:', destinationLocation);
+                        
+                        // Show success feedback
+                        document.getElementById('destHelp').style.display = 'none';
+                        document.getElementById('destStatus').style.display = 'block';
+                        document.getElementById('destinationSearch').value = place.formatted_address.split(',')[0];
+                        
+                        updateDestinationMarker();
+                        updateLocationDisplay();
+                        checkCanSubmit();
+                        
+                        showToast('✅ Destination: ' + place.formatted_address.split(',')[0]);
+                    } else if (status === 'ZERO_RESULTS') {
+                        showToast('❌ Location not found. Try: "Islamabad, Pakistan"', 'error');
+                    } else if (status === 'REQUEST_DENIED') {
+                        showToast('❌ API Error: Geocoding API not enabled. Check console.', 'error');
+                        console.error('Enable Geocoding API: https://console.cloud.google.com/apis/library/geocoding-backend.googleapis.com');
+                    } else {
+                        showToast('❌ Geocoding failed: ' + status, 'error');
+                        console.error('Geocoding error:', status, results);
+                    }
+                });
+            } catch (error) {
+                btn.disabled = false;
+                btnText.textContent = '📍 Set';
+                showToast('Error: ' + error.message, 'error');
+                console.error('Geocoding exception:', error);
+            }
+        }
+        
+        // Handle Enter key press
+        function handlePickupKeyPress(event) {
+            if (event.key === 'Enter') {
+                event.preventDefault();
+                manualGeocodePickup();
+            }
+        }
+        
+        function handleDestKeyPress(event) {
+            if (event.key === 'Enter') {
+                event.preventDefault();
+                manualGeocodeDest();
+            }
+        }
+
+        async function submitOrder() {
+            if (!pickupLocation || !destinationLocation) {
+                showToast('Please select both pickup and destination', 'error');
+                return;
+            }
+            
+            try {
+                const response = await fetch(`${API_BASE}/enduser/orders`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        origin: {
+                            latitude: pickupLocation.lat,
+                            longitude: pickupLocation.lng
+                        },
+                        destination: {
+                            latitude: destinationLocation.lat,
+                            longitude: destinationLocation.lng
+                        }
+                    })
+                });
+
+                const data = await response.json();
+                
+                if (data.success) {
+                    showToast('✅ Order placed successfully! Order ID: ' + data.data.id.substring(0, 12) + '...');
+                    
+                    // Reset locations
+                    pickupLocation = null;
+                    destinationLocation = null;
+                    document.getElementById('pickupSearch').value = '';
+                    document.getElementById('destinationSearch').value = '';
+                    
+                    // Reset status indicators
+                    document.getElementById('pickupHelp').style.display = 'none';
+                    document.getElementById('pickupStatus').style.display = 'none';
+                    document.getElementById('destHelp').style.display = 'none';
+                    document.getElementById('destStatus').style.display = 'none';
+                    
+                    if (pickupMarker) pickupMarker.setMap(null);
+                    if (destinationMarker) destinationMarker.setMap(null);
+                    if (directionsRenderer) directionsRenderer.setDirections({routes: []});
+                    
+                    document.getElementById('locationInfo').style.display = 'none';
+                    checkCanSubmit();
+                } else {
+                    showToast('❌ ' + data.error, 'error');
+                }
+            } catch (error) {
+                showToast('Error: ' + error.message, 'error');
+            }
+        }
+    </script>
+    
+    <script async defer
+        src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAdlfTHUOg2PbRxoIDr78hCI9feJtWfnrU&libraries=places&callback=initMap">
+    </script>
+</body>
+</html>

@@ -1,0 +1,1039 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Live Drone Tracking - Delivery Management</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            background: #f5f5f5;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px 30px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            position: relative;
+            z-index: 1000;
+        }
+
+        .header h1 {
+            font-size: 24px;
+            font-weight: 600;
+        }
+
+        .header p {
+            font-size: 14px;
+            opacity: 0.9;
+            margin-top: 5px;
+        }
+
+        .container {
+            display: flex;
+            height: calc(100vh - 80px);
+        }
+
+        .sidebar {
+            width: 350px;
+            background: white;
+            box-shadow: 2px 0 10px rgba(0,0,0,0.05);
+            overflow-y: auto;
+            padding: 20px;
+        }
+
+        .map-container {
+            flex: 1;
+            position: relative;
+        }
+
+        #map {
+            width: 100%;
+            height: 100%;
+        }
+
+        .info-card {
+            background: white;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 15px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .info-card h3 {
+            font-size: 14px;
+            font-weight: 600;
+            color: #666;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            margin-top: 5px;
+        }
+
+        .status-pending { background: #fff3cd; color: #856404; }
+        .status-reserved { background: #cce5ff; color: #004085; }
+        .status-in_transit { background: #d4edda; color: #155724; }
+        .status-delivered { background: #d1ecf1; color: #0c5460; }
+        .status-failed { background: #f8d7da; color: #721c24; }
+
+        .location-info {
+            font-size: 13px;
+            margin: 8px 0;
+        }
+
+        .location-info strong {
+            display: block;
+            color: #333;
+            margin-bottom: 4px;
+        }
+
+        .coords {
+            color: #666;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+        }
+
+        .eta-display {
+            font-size: 28px;
+            font-weight: 700;
+            color: #667eea;
+            text-align: center;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            margin: 10px 0;
+        }
+
+        .eta-label {
+            font-size: 12px;
+            font-weight: 600;
+            color: #666;
+            text-transform: uppercase;
+            margin-bottom: 5px;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 12px;
+            border: none;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 10px;
+            transition: all 0.3s;
+        }
+
+        .btn-primary {
+            background: #667eea;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #5568d3;
+        }
+
+        .btn-success {
+            background: #28a745;
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #218838;
+        }
+
+        .btn-danger {
+            background: #dc3545;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #c82333;
+        }
+
+        .login-form {
+            margin-bottom: 20px;
+        }
+
+        .login-form input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            margin-bottom: 10px;
+            font-size: 14px;
+        }
+
+        .login-form select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            margin-bottom: 10px;
+            font-size: 14px;
+        }
+
+        .distance-info {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px;
+            background: #f8f9fa;
+            border-radius: 6px;
+            margin-top: 10px;
+        }
+
+        .distance-info div {
+            text-align: center;
+        }
+
+        .distance-info .value {
+            font-size: 18px;
+            font-weight: 700;
+            color: #333;
+        }
+
+        .distance-info .label {
+            font-size: 11px;
+            color: #666;
+            text-transform: uppercase;
+            margin-top: 2px;
+        }
+
+        .alert {
+            padding: 12px;
+            border-radius: 6px;
+            margin-bottom: 15px;
+            font-size: 13px;
+        }
+
+        .alert-info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+
+        .alert-success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .alert-danger {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .progress-steps {
+            margin: 15px 0;
+        }
+
+        .step {
+            display: flex;
+            align-items: center;
+            margin-bottom: 12px;
+            font-size: 13px;
+        }
+
+        .step-icon {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 10px;
+            font-weight: 700;
+            font-size: 12px;
+        }
+
+        .step-icon.completed {
+            background: #28a745;
+            color: white;
+        }
+
+        .step-icon.active {
+            background: #667eea;
+            color: white;
+        }
+
+        .step-icon.pending {
+            background: #e9ecef;
+            color: #999;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 20px;
+            color: #666;
+        }
+
+        .spinner {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .map-legend {
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+            font-size: 12px;
+            z-index: 100;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            margin: 8px 0;
+        }
+
+        .legend-icon {
+            width: 20px;
+            height: 20px;
+            margin-right: 10px;
+            border-radius: 50%;
+        }
+
+        .icon-pickup { background: #4CAF50; }
+        .icon-destination { background: #F44336; }
+        .icon-drone { background: #2196F3; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1> Live Drone Delivery Tracking</h1>
+        <p>Real-time tracking with Google Maps integration</p>
+    </div>
+
+    <div class="container">
+        <div class="sidebar">
+            <div id="loginSection">
+                <div class="info-card">
+                    <h3>Login</h3>
+                    <div class="login-form">
+                        <input type="text" id="username" placeholder="Enter username" value="drone-user-001">
+                        <select id="userType">
+                            <option value="drone">Drone</option>
+                            <option value="enduser">EndUser</option>
+                            <option value="admin">Admin</option>
+                        </select>
+                        <button class="btn btn-primary" onclick="login()">Connect</button>
+                    </div>
+                </div>
+            </div>
+
+            <div id="dashboardSection" style="display: none;">
+                <div class="info-card">
+                    <h3>User Info</h3>
+                    <div id="userInfo"></div>
+                </div>
+
+                <div id="currentOrderSection" style="display: none;">
+                    <div class="info-card">
+                        <h3>Current Order</h3>
+                        <div id="orderInfo"></div>
+
+                        <div class="progress-steps" id="progressSteps"></div>
+
+                        <div id="etaSection" style="display: none;">
+                            <div class="eta-label">Estimated Time</div>
+                            <div class="eta-display" id="etaDisplay">--</div>
+                        </div>
+
+                        <div class="distance-info" id="distanceInfo" style="display: none;">
+                            <div>
+                                <div class="value" id="distanceValue">--</div>
+                                <div class="label">Distance (km)</div>
+                            </div>
+                            <div>
+                                <div class="value" id="speedValue">--</div>
+                                <div class="label">Speed (km/h)</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="info-card" id="droneActions" style="display: none;">
+                        <h3>Drone Actions</h3>
+                        <button class="btn btn-primary" onclick="pickUpOrder()" id="btnPickup">📦 Pick Up Order</button>
+                        <button class="btn btn-success" onclick="markDelivered()" id="btnDeliver">✅ Mark Delivered</button>
+                        <button class="btn btn-danger" onclick="markFailed()" id="btnFailed">❌ Mark Failed</button>
+                    </div>
+                </div>
+
+                <div id="noOrderSection" style="display: none;">
+                    <div class="alert alert-info">
+                        <strong>No active order</strong><br>
+                        <span id="noOrderMessage">Click below to get started</span>
+                    </div>
+                    <button class="btn btn-primary" onclick="reserveJob()" id="btnReserve">🔍 Reserve New Job</button>
+                    <button class="btn btn-primary" onclick="submitOrder()" id="btnSubmit" style="display: none;">📮 Submit New Order</button>
+                </div>
+
+                <button class="btn btn-primary" onclick="refreshData()" style="margin-top: 15px;">🔄 Refresh</button>
+                <button class="btn btn-danger" onclick="logout()" style="margin-top: 5px;">🚪 Logout</button>
+            </div>
+        </div>
+
+        <div class="map-container">
+            <div id="map"></div>
+            
+            <div class="map-legend">
+                <strong>Map Legend</strong>
+                <div class="legend-item">
+                    <div class="legend-icon icon-pickup"></div>
+                    <span>📍 Pickup Location</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-icon icon-destination"></div>
+                    <span>🎯 Destination</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-icon icon-drone"></div>
+                    <span>🚁 Drone Location</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:3000/api';
+        let token = '';
+        let userType = '';
+        let username = '';
+        let map;
+        let markers = {
+            pickup: null,
+            destination: null,
+            drone: null
+        };
+        let routePath = null;
+        let updateInterval = null;
+        let currentOrder = null;
+
+        // Google Maps error handler
+        function gm_authFailure() {
+            console.error('❌ Google Maps authentication failed!');
+            showMapError('Authentication Failed', 'Your API key is invalid or has restrictions. Please check your Google Cloud Console.');
+        }
+        
+        window.gm_authFailure = gm_authFailure;
+
+        function showMapError(title, message) {
+            document.getElementById('map').innerHTML = `
+                <div style="display: flex; align-items: center; justify-content: center; height: 100%; background: #f8f9fa; color: #333; padding: 20px; text-align: center; flex-direction: column;">
+                    <h2 style="color: #dc3545; margin-bottom: 20px;">⚠️ ${title}</h2>
+                    <p style="font-size: 16px; margin-bottom: 20px; max-width: 600px;">${message}</p>
+                    <div style="background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); max-width: 700px; text-align: left;">
+                        <h3 style="color: #667eea; margin-bottom: 15px;">🔧 Troubleshooting Steps:</h3>
+                        <ol style="line-height: 2;">
+                            <li>Open <a href="https://console.cloud.google.com/" target="_blank" style="color: #007bff;">Google Cloud Console</a></li>
+                            <li>Enable <strong>Maps JavaScript API</strong> in your project</li>
+                            <li>Enable <strong>Billing</strong> for your project (required by Google)</li>
+                            <li>Check API key restrictions (HTTP referrers, IP addresses)</li>
+                            <li>If using localhost, add <code style="background: #e9ecef; padding: 4px 8px; border-radius: 3px;">http://localhost:*</code> to referrer restrictions</li>
+                            <li>Replace the API key in tracking.html at line 986</li>
+                        </ol>
+                        <p style="margin-top: 15px; padding: 10px; background: #fff3cd; border-left: 4px solid #ffc107; font-size: 14px;">
+                            <strong>Note:</strong> See <strong>GOOGLE_MAPS_SETUP.md</strong> for detailed setup instructions.
+                        </p>
+                    </div>
+                </div>
+            `;
+        }
+
+        // Initialize map
+        function initMap() {
+            console.log('🗺️ Initializing Google Maps...');
+            
+            // Check if Google Maps API loaded
+            if (typeof google === 'undefined' || !google.maps) {
+                console.error('❌ Google Maps API script not loaded!');
+                showMapError('Google Maps Not Loaded', 'The Google Maps JavaScript API failed to load. Check your internet connection and API key.');
+                return;
+            }
+            
+            try {
+                map = new google.maps.Map(document.getElementById('map'), {
+                    center: { lat: 37.7749, lng: -122.4194 }, // San Francisco default
+                    zoom: 4,
+                    mapTypeControl: true,
+                    streetViewControl: true,
+                    fullscreenControl: true,
+                    zoomControl: true,
+                    styles: [
+                        {
+                            featureType: 'poi',
+                            elementType: 'labels',
+                            stylers: [{ visibility: 'off' }]
+                        }
+                    ]
+                });
+                
+                console.log('✅ Google Maps initialized successfully!');
+                console.log('📍 Map ready to display tracking data');
+            } catch (error) {
+                console.error('❌ Error initializing map:', error);
+                showMapError('Map Initialization Error', error.message);
+            }
+        }
+
+        // Login function
+        async function login() {
+            username = document.getElementById('username').value;
+            userType = document.getElementById('userType').value;
+
+            if (!username) {
+                alert('Please enter a username');
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_BASE}/auth/login`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name: username, type: userType })
+                });
+
+                const data = await response.json();
+                console.log('🔐 Login response:', { success: data.success, user: data.data?.name });
+                
+                if (data.success) {
+                    token = data.data.token;
+                    document.getElementById('loginSection').style.display = 'none';
+                    document.getElementById('dashboardSection').style.display = 'block';
+                    
+                    document.getElementById('userInfo').innerHTML = `
+                        <strong>${data.data.name}</strong><br>
+                        <span class="status-badge status-in_transit">${data.data.type}</span>
+                    `;
+                    
+                    // Check if Google Maps is loaded
+                    if (typeof google === 'undefined' || !google.maps) {
+                        console.warn('⚠️ Google Maps not available - map visualization disabled');
+                    } else {
+                        console.log('✅ Google Maps available - tracking enabled');
+                    }
+
+                    if (userType === 'drone') {
+                        document.getElementById('droneActions').style.display = 'block';
+                        document.getElementById('btnReserve').style.display = 'block';
+                    } else if (userType === 'enduser') {
+                        document.getElementById('btnSubmit').style.display = 'block';
+                    }
+
+                    await refreshData();
+                    startAutoRefresh();
+                } else {
+                    alert('Login failed: ' + data.error);
+                }
+            } catch (error) {
+                alert('Error: ' + error.message);
+            }
+        }
+
+        // Logout
+        function logout() {
+            stopAutoRefresh();
+            token = '';
+            currentOrder = null;
+            clearMap();
+            document.getElementById('loginSection').style.display = 'block';
+            document.getElementById('dashboardSection').style.display = 'none';
+        }
+
+        // Refresh data
+        async function refreshData() {
+            if (userType === 'drone') {
+                await loadDroneOrder();
+            } else if (userType === 'enduser') {
+                await loadUserOrders();
+            }
+        }
+
+        // Load drone's current order
+        async function loadDroneOrder() {
+            try {
+                const response = await fetch(`${API_BASE}/drone/order`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+
+                const data = await response.json();
+                console.log('📦 Order data received:', data.success ? 'Order found' : 'No active order');
+
+                if (data.success && data.data) {
+                    currentOrder = data.data;
+                    console.log('📍 Order details:', {
+                        id: data.data.id?.substring(0, 12),
+                        status: data.data.status,
+                        origin: data.data.origin,
+                        destination: data.data.destination,
+                        currentLocation: data.data.currentLocation
+                    });
+                    displayOrder(currentOrder);
+                    updateMap(currentOrder);
+                    updateProgressSteps(currentOrder.status);
+                    document.getElementById('currentOrderSection').style.display = 'block';
+                    document.getElementById('noOrderSection').style.display = 'none';
+                } else {
+                    currentOrder = null;
+                    document.getElementById('currentOrderSection').style.display = 'none';
+                    document.getElementById('noOrderSection').style.display = 'block';
+                    document.getElementById('noOrderMessage').textContent = 'You have no active orders';
+                    clearMap();
+                }
+            } catch (error) {
+                console.error('❌ Error loading order:', error);
+            }
+        }
+
+        // Display order information
+        function displayOrder(order) {
+            const statusClass = `status-${order.status.toLowerCase()}`;
+            
+            document.getElementById('orderInfo').innerHTML = `
+                <div class="location-info">
+                    <strong>Order ID:</strong>
+                    <span class="coords">${order.id.substring(0, 12)}...</span>
+                </div>
+                <div class="location-info">
+                    <strong>Status:</strong>
+                    <span class="status-badge ${statusClass}">${order.status.toUpperCase()}</span>
+                </div>
+                <div class="location-info">
+                    <strong>Customer:</strong>
+                    <span>${order.enduserName}</span>
+                </div>
+                <div class="location-info">
+                    <strong>📍 Pickup:</strong>
+                    <span class="coords">${order.origin.latitude.toFixed(4)}, ${order.origin.longitude.toFixed(4)}</span>
+                </div>
+                <div class="location-info">
+                    <strong>🎯 Destination:</strong>
+                    <span class="coords">${order.destination.latitude.toFixed(4)}, ${order.destination.longitude.toFixed(4)}</span>
+                </div>
+                ${order.currentLocation ? `
+                <div class="location-info">
+                    <strong>🚁 Current Location:</strong>
+                    <span class="coords">${order.currentLocation.latitude.toFixed(4)}, ${order.currentLocation.longitude.toFixed(4)}</span>
+                </div>
+                ` : ''}
+            `;
+
+            // Show/hide buttons based on status
+            document.getElementById('btnPickup').style.display = order.status === 'reserved' ? 'block' : 'none';
+            document.getElementById('btnDeliver').style.display = (order.status === 'in_transit' || order.status === 'picked_up') ? 'block' : 'none';
+            document.getElementById('btnFailed').style.display = (order.status === 'in_transit' || order.status === 'picked_up') ? 'block' : 'none';
+
+            // Calculate and display ETA
+            if (order.estimatedDeliveryTime) {
+                const eta = new Date(order.estimatedDeliveryTime);
+                const now = new Date();
+                const minutesLeft = Math.max(0, Math.round((eta - now) / 60000));
+                
+                document.getElementById('etaSection').style.display = 'block';
+                document.getElementById('etaDisplay').textContent = minutesLeft + ' min';
+            } else {
+                document.getElementById('etaSection').style.display = 'none';
+            }
+
+            // Calculate distance
+            if (order.currentLocation && order.destination) {
+                const distance = calculateDistance(
+                    order.currentLocation,
+                    order.destination
+                );
+                document.getElementById('distanceInfo').style.display = 'flex';
+                document.getElementById('distanceValue').textContent = distance.toFixed(2);
+                document.getElementById('speedValue').textContent = '30'; // Default drone speed
+            } else {
+                document.getElementById('distanceInfo').style.display = 'none';
+            }
+        }
+
+        // Update progress steps
+        function updateProgressSteps(status) {
+            const steps = [
+                { name: 'Reserved', status: 'reserved' },
+                { name: 'Picked Up', status: 'picked_up' },
+                { name: 'In Transit', status: 'in_transit' },
+                { name: 'Delivered', status: 'delivered' }
+            ];
+
+            const statusOrder = ['reserved', 'picked_up', 'in_transit', 'delivered'];
+            const currentIndex = statusOrder.indexOf(status);
+
+            let html = '';
+            steps.forEach((step, index) => {
+                let iconClass = 'pending';
+                if (index < currentIndex) iconClass = 'completed';
+                if (index === currentIndex) iconClass = 'active';
+
+                html += `
+                    <div class="step">
+                        <div class="step-icon ${iconClass}">${index + 1}</div>
+                        <span>${step.name}</span>
+                    </div>
+                `;
+            });
+
+            document.getElementById('progressSteps').innerHTML = html;
+        }
+
+        // Update map with markers and route
+        function updateMap(order) {
+            // Safety check: ensure Google Maps is loaded
+            if (typeof google === 'undefined' || !google.maps || !map) {
+                console.warn('⚠️ Cannot update map - Google Maps not loaded');
+                console.log('💡 Order data is available but cannot be visualized without Google Maps');
+                console.log('📊 Order coordinates:', {
+                    origin: order.origin,
+                    destination: order.destination,
+                    current: order.currentLocation
+                });
+                return;
+            }
+            
+            console.log('🗺️ Updating map with order data...');
+            
+            clearMap();
+
+            // Add pickup marker
+            markers.pickup = new google.maps.Marker({
+                position: { lat: order.origin.latitude, lng: order.origin.longitude },
+                map: map,
+                title: 'Pickup Location',
+                icon: {
+                    path: google.maps.SymbolPath.CIRCLE,
+                    scale: 10,
+                    fillColor: '#4CAF50',
+                    fillOpacity: 1,
+                    strokeColor: '#fff',
+                    strokeWeight: 2
+                },
+                label: {
+                    text: '📍',
+                    fontSize: '18px'
+                }
+            });
+
+            // Add destination marker
+            markers.destination = new google.maps.Marker({
+                position: { lat: order.destination.latitude, lng: order.destination.longitude },
+                map: map,
+                title: 'Destination',
+                icon: {
+                    path: google.maps.SymbolPath.CIRCLE,
+                    scale: 10,
+                    fillColor: '#F44336',
+                    fillOpacity: 1,
+                    strokeColor: '#fff',
+                    strokeWeight: 2
+                },
+                label: {
+                    text: '🎯',
+                    fontSize: '18px'
+                }
+            });
+
+            // Add drone marker if in transit
+            if (order.currentLocation) {
+                markers.drone = new google.maps.Marker({
+                    position: { lat: order.currentLocation.latitude, lng: order.currentLocation.longitude },
+                    map: map,
+                    title: 'Drone Location',
+                    icon: {
+                        path: google.maps.SymbolPath.CIRCLE,
+                        scale: 12,
+                        fillColor: '#2196F3',
+                        fillOpacity: 1,
+                        strokeColor: '#fff',
+                        strokeWeight: 3
+                    },
+                    label: {
+                        text: '🚁',
+                        fontSize: '20px'
+                    },
+                    animation: google.maps.Animation.BOUNCE
+                });
+
+                // Draw route from drone to destination
+                routePath = new google.maps.Polyline({
+                    path: [
+                        { lat: order.currentLocation.latitude, lng: order.currentLocation.longitude },
+                        { lat: order.destination.latitude, lng: order.destination.longitude }
+                    ],
+                    geodesic: true,
+                    strokeColor: '#2196F3',
+                    strokeOpacity: 0.7,
+                    strokeWeight: 3,
+                    map: map
+                });
+            } else {
+                // Draw route from pickup to destination
+                routePath = new google.maps.Polyline({
+                    path: [
+                        { lat: order.origin.latitude, lng: order.origin.longitude },
+                        { lat: order.destination.latitude, lng: order.destination.longitude }
+                    ],
+                    geodesic: true,
+                    strokeColor: '#667eea',
+                    strokeOpacity: 0.5,
+                    strokeWeight: 2,
+                    map: map
+                });
+            }
+
+            // Fit bounds to show all markers
+            const bounds = new google.maps.LatLngBounds();
+            bounds.extend({ lat: order.origin.latitude, lng: order.origin.longitude });
+            bounds.extend({ lat: order.destination.latitude, lng: order.destination.longitude });
+            if (order.currentLocation) {
+                bounds.extend({ lat: order.currentLocation.latitude, lng: order.currentLocation.longitude });
+            }
+            map.fitBounds(bounds);
+        }
+
+        // Clear map markers
+        function clearMap() {
+            if (markers.pickup) markers.pickup.setMap(null);
+            if (markers.destination) markers.destination.setMap(null);
+            if (markers.drone) markers.drone.setMap(null);
+            if (routePath) routePath.setMap(null);
+        }
+
+        // Calculate distance between two points (Haversine formula)
+        function calculateDistance(loc1, loc2) {
+            const R = 6371; // Earth's radius in km
+            const dLat = (loc2.latitude - loc1.latitude) * Math.PI / 180;
+            const dLon = (loc2.longitude - loc1.longitude) * Math.PI / 180;
+            const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+                      Math.cos(loc1.latitude * Math.PI / 180) * Math.cos(loc2.latitude * Math.PI / 180) *
+                      Math.sin(dLon/2) * Math.sin(dLon/2);
+            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+            return R * c;
+        }
+
+        // Drone actions
+        async function reserveJob() {
+            try {
+                const response = await fetch(`${API_BASE}/drone/reserve`, {
+                    method: 'POST',
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+
+                const data = await response.json();
+                
+                if (data.success) {
+                    alert('✅ Job reserved successfully!');
+                    await refreshData();
+                } else {
+                    alert('❌ ' + data.error);
+                }
+            } catch (error) {
+                alert('Error: ' + error.message);
+            }
+        }
+
+        async function pickUpOrder() {
+            if (!confirm('Confirm pickup of this order?')) return;
+
+            try {
+                const response = await fetch(`${API_BASE}/drone/grab`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({ fromLocation: 'origin' })
+                });
+
+                const data = await response.json();
+                
+                if (data.success) {
+                    alert('✅ Order picked up! Now in transit.');
+                    await refreshData();
+                } else {
+                    alert('❌ ' + data.error);
+                }
+            } catch (error) {
+                alert('Error: ' + error.message);
+            }
+        }
+
+        async function markDelivered() {
+            if (!confirm('Mark this order as DELIVERED?')) return;
+
+            try {
+                const response = await fetch(`${API_BASE}/drone/order/status`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({ status: 'delivered' })
+                });
+
+                const data = await response.json();
+                
+                if (data.success) {
+                    alert('✅ Order delivered successfully!');
+                    await refreshData();
+                } else {
+                    alert('❌ ' + data.error);
+                }
+            } catch (error) {
+                alert('Error: ' + error.message);
+            }
+        }
+
+        async function markFailed() {
+            if (!confirm('Mark this order as FAILED?')) return;
+
+            try {
+                const response = await fetch(`${API_BASE}/drone/order/status`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({ status: 'failed' })
+                });
+
+                const data = await response.json();
+                
+                if (data.success) {
+                    alert('⚠️ Order marked as failed.');
+                    await refreshData();
+                } else {
+                    alert('❌ ' + data.error);
+                }
+            } catch (error) {
+                alert('Error: ' + error.message);
+            }
+        }
+
+        // Auto-refresh every 5 seconds
+        function startAutoRefresh() {
+            updateInterval = setInterval(refreshData, 5000);
+        }
+
+        function stopAutoRefresh() {
+            if (updateInterval) {
+                clearInterval(updateInterval);
+            }
+        }
+
+        // Load user orders (for enduser)
+        async function loadUserOrders() {
+            try {
+                const response = await fetch(`${API_BASE}/enduser/orders`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+
+                const data = await response.json();
+
+                if (data.success && data.data && data.data.length > 0) {
+                    // Show most recent order
+                    currentOrder = data.data[0];
+                    displayOrder(currentOrder);
+                    updateMap(currentOrder);
+                    updateProgressSteps(currentOrder.status);
+                    document.getElementById('currentOrderSection').style.display = 'block';
+                    document.getElementById('noOrderSection').style.display = 'none';
+                } else {
+                    currentOrder = null;
+                    document.getElementById('currentOrderSection').style.display = 'none';
+                    document.getElementById('noOrderSection').style.display = 'block';
+                    document.getElementById('noOrderMessage').textContent = 'You have no orders yet';
+                    clearMap();
+                }
+            } catch (error) {
+                console.error('Error loading orders:', error);
+            }
+        }
+
+        // Submit new order (for enduser)
+        async function submitOrder() {
+            const originLat = prompt('Enter pickup latitude:');
+            const originLng = prompt('Enter pickup longitude:');
+            const destLat = prompt('Enter destination latitude:');
+            const destLng = prompt('Enter destination longitude:');
+
+            if (!originLat || !originLng || !destLat || !destLng) {
+                alert('❌ All coordinates are required');
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_BASE}/enduser/orders`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({
+                        origin: {
+                            latitude: parseFloat(originLat),
+                            longitude: parseFloat(originLng)
+                        },
+                        destination: {
+                            latitude: parseFloat(destLat),
+                            longitude: parseFloat(destLng)
+                        }
+                    })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    alert('✅ Order submitted successfully!');
+                    await refreshData();
+                } else {
+                    alert('❌ ' + data.error);
+                }
+            } catch (error) {
+                alert('Error: ' + error.message);
+            }
+        }
+
+        // Note: initMap() is called automatically by Google Maps API callback
+        // when the script loads (see script tag below with callback=initMap)
+        // If API key is missing, initMap will show an error message
+    </script>
+    
+    <!-- Google Maps API - Replace YOUR_API_KEY with your actual Google Maps API key -->
+    <script async defer
+        src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAdlfTHUOg2PbRxoIDr78hCI9feJtWfnrU&callback=initMap">
+    </script>
+</body>
+</html>

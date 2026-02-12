@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quick Fix - Enable Google Maps APIs</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            background: #f5f5f5;
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 30px;
+        }
+        .container {
+            background: white;
+            border-radius: 12px;
+            padding: 40px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #dc3545;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        h2 {
+            color: #333;
+            margin-top: 30px;
+            border-bottom: 2px solid #667eea;
+            padding-bottom: 10px;
+        }
+        .api-list {
+            display: grid;
+            gap: 15px;
+            margin: 20px 0;
+        }
+        .api-item {
+            background: #f9f9f9;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            padding: 20px;
+            transition: all 0.3s;
+        }
+        .api-item:hover {
+            background: #fff3cd;
+            border-color: #ffc107;
+        }
+        .api-item.missing {
+            background: #f8d7da;
+            border-color: #dc3545;
+        }
+        .api-name {
+            font-weight: 600;
+            font-size: 1.1rem;
+            color: #333;
+            margin-bottom: 8px;
+        }
+        .api-status {
+            font-size: 0.9rem;
+            margin-bottom: 12px;
+        }
+        .status-missing {
+            color: #dc3545;
+            font-weight: 600;
+        }
+        .status-enabled {
+            color: #28a745;
+            font-weight: 600;
+        }
+        .api-button {
+            display: inline-block;
+            background: #667eea;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 6px;
+            text-decoration: none;
+            transition: background 0.3s;
+            margin-top: 10px;
+        }
+        .api-button:hover {
+            background: #5568d3;
+        }
+        .warning-box {
+            background: #fff3cd;
+            border: 2px solid #ffc107;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 25px 0;
+            color: #856404;
+        }
+        .error-box {
+            background: #f8d7da;
+            border: 2px solid #dc3545;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 25px 0;
+            color: #721c24;
+        }
+        .success-box {
+            background: #d4edda;
+            border: 2px solid #28a745;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 25px 0;
+            color: #155724;
+        }
+        .step-number {
+            display: inline-block;
+            background: #667eea;
+            color: white;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            text-align: center;
+            line-height: 30px;
+            font-weight: 600;
+            margin-right: 10px;
+        }
+        code {
+            background: #f4f4f4;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: 'Courier New', monospace;
+            color: #e83e8c;
+        }
+        li {
+            margin: 8px 0;
+            line-height: 1.6;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🚨 DIRECTIONS API ERROR - QUICK FIX</h1>
+
+        <div class="error-box">
+            <strong>❌ Error:</strong> MapsServerError: DIRECTIONS_ROUTE: UNKNOWN_ERROR
+            <br><strong>Cause:</strong> Directions API is not enabled
+            <br><strong>Fix:</strong> Enable it in 2 minutes!
+        </div>
+
+        <h2>📋 Required APIs Status</h2>
+        <div class="api-list">
+            <div class="api-item">
+                <div class="api-name">✅ Maps JavaScript API</div>
+                <div class="api-status"><span class="status-enabled">ENABLED</span></div>
+                <p>Used for map display</p>
+            </div>
+
+            <div class="api-item">
+                <div class="api-name">✅ Geocoding API</div>
+                <div class="api-status"><span class="status-enabled">ENABLED</span></div>
+                <p>Used for location search</p>
+            </div>
+
+            <div class="api-item missing">
+                <div class="api-name">❌ Directions API</div>
+                <div class="api-status"><span class="status-missing">NOT ENABLED ← FIX THIS!</span></div>
+                <p>Used for route drawing and navigation</p>
+                <a href="https://console.cloud.google.com/apis/library/directions-backend.googleapis.com" target="_blank" class="api-button">
+                    🔧 Enable Directions API
+                </a>
+            </div>
+
+            <div class="api-item">
+                <div class="api-name">⚪ Places API</div>
+                <div class="api-status">Optional (for autocomplete)</div>
+                <p>Used for location autocomplete</p>
+            </div>
+        </div>
+
+        <h2>⚡ Quick Fix (2 Steps)</h2>
+
+        <div style="background: #e7f3ff; padding: 20px; border-radius: 8px; margin: 20px 0;">
+            <p><span class="step-number">1</span><strong>Click this button to enable Directions API:</strong></p>
+            <a href="https://console.cloud.google.com/apis/library/directions-backend.googleapis.com" target="_blank" class="api-button" style="font-size: 1.1rem; padding: 15px 30px;">
+                🔧 Enable Directions API in Google Cloud Console
+            </a>
+            <p style="margin-top: 15px; color: #666;">This will open Google Cloud Console</p>
+
+            <p style="margin-top: 25px;"><span class="step-number">2</span><strong>In Google Cloud Console:</strong></p>
+            <ul>
+                <li>Click <code>Enable</code> button (blue button on the page)</li>
+                <li>Wait 1-2 minutes for activation</li>
+                <li>Return to your app</li>
+                <li>Clear browser cache: <code>Ctrl+Shift+Delete</code></li>
+                <li>Refresh page: <code>F5</code></li>
+            </ul>
+        </div>
+
+        <h2>🔑 Verify Your API Key</h2>
+        <p>Make sure Directions API is added to your API key restrictions:</p>
+        <ol>
+            <li>Go to: <a href="https://console.cloud.google.com/apis/credentials" target="_blank">Google Cloud Console → Credentials</a></li>
+            <li>Click your API key (AIzaSyAdlfTHUOg2PbRxoIDr78hCI9feJtWfnrU)</li>
+            <li>Scroll to "API restrictions"</li>
+            <li>If restricted, select:
+                <ul>
+                    <li>✅ Maps JavaScript API</li>
+                    <li>✅ Geocoding API</li>
+                    <li>✅ Directions API ← ADD THIS</li>
+                    <li>✅ Places API (optional)</li>
+                </ul>
+            </li>
+            <li>Or select "Don't restrict key" for testing</li>
+            <li>Click <code>Save</code></li>
+        </ol>
+
+        <h2>💳 Verify Billing</h2>
+        <p>Directions API requires billing to be enabled:</p>
+        <ol>
+            <li>Go to: <a href="https://console.cloud.google.com/billing" target="_blank">Google Cloud Console → Billing</a></li>
+            <li>Must show "Billing enabled" in green</li>
+            <li>Must have valid payment method</li>
+            <li><strong>Don't worry:</strong> You get $200 free credit every month!</li>
+        </ol>
+
+        <h2>🧪 Test After Enabling</h2>
+        <ol>
+            <li>Wait 2-3 minutes after enabling API</li>
+            <li>Clear browser cache: <code>Ctrl+Shift+Delete</code></li>
+            <li>Refresh: <code>F5</code></li>
+            <li>Go to: <code>http://localhost:3000/drone-dashboard.html</code></li>
+            <li>Login as drone and reserve a job</li>
+            <li>✅ Route line should now appear on map!</li>
+        </ol>
+
+        <div class="success-box">
+            <strong>✅ Expected Result After Fix:</strong>
+            <ul style="margin: 10px 0; padding-left: 20px;">
+                <li>Route line appears between pickup and destination</li>
+                <li>Distance calculation shows (e.g., "2.5 km")</li>
+                <li>Estimated time calculation visible</li>
+                <li>No more "DIRECTIONS_ROUTE: UNKNOWN_ERROR"</li>
+            </ul>
+        </div>
+
+        <h2>🆘 If Still Not Working</h2>
+        <ul>
+            <li>Check console (F12) for error messages</li>
+            <li>Verify API key is shown in requests</li>
+            <li>Confirm all 4 APIs are enabled:
+                <ul>
+                    <li><code>Maps JavaScript API</code></li>
+                    <li><code>Geocoding API</code></li>
+                    <li><code>Directions API</code> ← Most important!</li>
+                    <li><code>Places API</code> (optional)</li>
+                </ul>
+            </li>
+            <li>Check billing account has valid payment method</li>
+            <li>Wait another 5 minutes for API to propagate</li>
+        </ul>
+
+        <h2>📞 Quick Links</h2>
+        <ul>
+            <li>
+                <a href="https://console.cloud.google.com/apis/library/directions-backend.googleapis.com" target="_blank">
+                    🔧 Enable Directions API
+                </a>
+            </li>
+            <li>
+                <a href="https://console.cloud.google.com/apis/credentials" target="_blank">
+                    🔑 View API Key Settings
+                </a>
+            </li>
+            <li>
+                <a href="https://console.cloud.google.com/billing" target="_blank">
+                    💳 Check Billing Account
+                </a>
+            </li>
+            <li>
+                <a href="http://localhost:3000/drone-dashboard.html" target="_blank">
+                    🚁 Return to Drone Dashboard
+                </a>
+            </li>
+        </ul>
+
+        <div class="warning-box" style="margin-top: 30px;">
+            <strong>⏱️ Timeline:</strong>
+            <ul style="margin: 10px 0; padding-left: 20px;">
+                <li>Now: Click "Enable Directions API" button</li>
+                <li>+2 min: Google enables the API</li>
+                <li>+3 min: Clear cache and refresh (Ctrl+Shift+Delete, F5)</li>
+                <li>+4 min: Routes should work! ✅</li>
+            </ul>
+        </div>
+    </div>
+</body>
+</html>

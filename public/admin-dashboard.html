@@ -1,0 +1,734 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - Drone Management</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            background: linear-gradient(135deg, #c31432 0%, #240b36 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+        }
+
+        header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .main-grid {
+            display: grid;
+            grid-template-columns: 450px 1fr;
+            gap: 20px;
+        }
+
+        .card {
+            background: white;
+            border-radius: 12px;
+            padding: 25px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            margin-bottom: 20px;
+        }
+
+        .card h2 {
+            color: #c31432;
+            margin-bottom: 20px;
+            font-size: 1.4rem;
+            border-bottom: 2px solid #f0f0f0;
+            padding-bottom: 10px;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+            color: #333;
+            font-size: 14px;
+        }
+
+        input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 6px;
+            font-size: 14px;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: #c31432;
+        }
+
+        button {
+            background: linear-gradient(135deg, #c31432 0%, #240b36 100%);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            transition: all 0.2s;
+            width: 100%;
+        }
+
+        button:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(195, 20, 50, 0.4);
+        }
+
+        button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+        }
+
+        .stat-card.orders {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        }
+
+        .stat-card.drones {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        }
+
+        .stat-card.active {
+            background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+        }
+
+        .stat-card.users {
+            background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+        }
+
+        .stat-value {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #ddd;
+        }
+
+        .tab {
+            padding: 12px 24px;
+            background: none;
+            border: none;
+            color: #666;
+            cursor: pointer;
+            font-weight: 600;
+            border-bottom: 3px solid transparent;
+            transition: all 0.2s;
+            width: auto;
+        }
+
+        .tab:hover {
+            color: #c31432;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .tab.active {
+            color: #c31432;
+            border-bottom-color: #c31432;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+            font-size: 13px;
+        }
+
+        th {
+            background: #f8f9fa;
+            font-weight: 700;
+            color: #333;
+            position: sticky;
+            top: 0;
+        }
+
+        tr:hover {
+            background: #f8f9fa;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 10px;
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+
+        .status-pending { background: #ffc107; color: #212529; }
+        .status-reserved { background: #17a2b8; color: white; }
+        .status-in-transit { background: #007bff; color: white; }
+        .status-delivered { background: #28a745; color: white; }
+        .status-failed { background: #dc3545; color: white; }
+        .status-idle { background: #28a745; color: white; }
+        .status-broken { background: #dc3545; color: white; }
+
+        .action-btns {
+            display: flex;
+            gap: 5px;
+        }
+
+        .btn-sm {
+            padding: 6px 12px;
+            font-size: 12px;
+            width: auto;
+            margin: 0;
+        }
+
+        .btn-danger {
+            background: #dc3545;
+        }
+
+        .btn-success {
+            background: #28a745;
+        }
+
+        .btn-primary {
+            background: #007bff;
+        }
+
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: #28a745;
+            color: white;
+            padding: 15px 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+            display: none;
+            animation: slideIn 0.3s ease-out;
+            z-index: 2000;
+            max-width: 400px;
+        }
+
+        @keyframes slideIn {
+            from { transform: translateX(400px); }
+            to { transform: translateX(0); }
+        }
+
+        .toast.error { background: #dc3545; }
+        .toast.warning { background: #ffc107; color: #212529; }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.6);
+            z-index: 3000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            max-width: 500px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .modal-content h3 {
+            margin-bottom: 20px;
+            color: #c31432;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .login-section {
+            max-width: 500px;
+            margin: 0 auto;
+        }
+
+        .dashboard-section {
+            display: none;
+        }
+
+        @media (max-width: 1200px) {
+            .main-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .stats {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1> Admin Dashboard</h1>
+            <p>System Management & Oversight</p>
+        </header>
+
+        <!-- Login Section -->
+        <div id="loginSection" class="login-section">
+            <div class="card">
+                <h2> Admin Login</h2>
+                <div class="form-group">
+                    <label>Admin Name</label>
+                    <input type="text" id="adminName" placeholder="e.g., admin123">
+                </div>
+                <button onclick="login()">Login</button>
+            </div>
+        </div>
+
+        <!-- Dashboard Section -->
+        <div id="dashboardSection" class="dashboard-section">
+            <!-- Statistics -->
+            <div class="stats">
+                <div class="stat-card orders">
+                    <div class="stat-value" id="statOrders">0</div>
+                    <div class="stat-label">Total Orders</div>
+                </div>
+                <div class="stat-card drones">
+                    <div class="stat-value" id="statDrones">0</div>
+                    <div class="stat-label">Total Drones</div>
+                </div>
+                <div class="stat-card active">
+                    <div class="stat-value" id="statActive">0</div>
+                    <div class="stat-label">Active Deliveries</div>
+                </div>
+                <div class="stat-card users">
+                    <div class="stat-value" id="statUsers">0</div>
+                    <div class="stat-label">Total Users</div>
+                </div>
+            </div>
+
+            <div class="main-grid">
+                <!-- Left Panel -->
+                <div>
+                    <div class="card">
+                        <h2>👑 Admin Info</h2>
+                        <div style="background: #f8f9fa; padding: 15px; border-radius: 8px;">
+                            <div style="margin-bottom: 10px;">
+                                <strong>Name:</strong> <span id="adminDisplayName">--</span>
+                            </div>
+                            <div style="margin-bottom: 10px;">
+                                <strong>Role:</strong> <span style="color: #c31432; font-weight: 700;">Administrator</span>
+                            </div>
+                        </div>
+                        <button onclick="logout()" style="margin-top: 15px; background: #dc3545;">Logout</button>
+                    </div>
+
+                    <div class="card">
+                        <h2>🔄 Quick Actions</h2>
+                        <button onclick="refreshData()" style="margin-bottom: 10px;">Refresh All Data</button>
+                        <button onclick="showAllUsers()" style="margin-bottom: 10px; background: #007bff;">View All Users</button>
+                    </div>
+                </div>
+
+                <!-- Right Panel -->
+                <div class="card">
+                    <div class="tabs">
+                        <button class="tab active" onclick="switchTab('orders')">📦 Orders</button>
+                        <button class="tab" onclick="switchTab('drones')">🚁 Drones</button>
+                    </div>
+
+                    <!-- Orders Tab -->
+                    <div id="ordersTab" class="tab-content active">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Order ID</th>
+                                    <th>Status</th>
+                                    <th>User</th>
+                                    <th>Pickup</th>
+                                    <th>Destination</th>
+                                    <th>Drone</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="ordersTable">
+                                <tr><td colspan="7" style="text-align: center;">Loading...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Drones Tab -->
+                    <div id="dronesTab" class="tab-content">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Drone ID</th>
+                                    <th>User ID</th>
+                                    <th>Status</th>
+                                    <th>Location</th>
+                                    <th>Current Order</th>
+                                    <th>Last Heartbeat</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="dronesTable">
+                                <tr><td colspan="7" style="text-align: center;">Loading...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Edit Order Modal -->
+        <div id="editModal" class="modal">
+            <div class="modal-content">
+                <h3>Edit Order Location</h3>
+                <div id="editForm"></div>
+            </div>
+        </div>
+
+        <!-- Toast -->
+        <div id="toast" class="toast"></div>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:3000/api';
+        let token = '';
+        let adminName = '';
+        let ordersData = [];
+        let dronesData = [];
+        let usersData = [];
+        let refreshInterval = null;
+
+        function showToast(message, type = 'success') {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.className = 'toast ' + type;
+            toast.style.display = 'block';
+            setTimeout(() => toast.style.display = 'none', 4000);
+        }
+
+        async function login() {
+            adminName = document.getElementById('adminName').value.trim();
+            if (!adminName) {
+                showToast('Please enter admin name', 'error');
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_BASE}/auth/login`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name: adminName, type: 'admin' })
+                });
+
+                const data = await response.json();
+                if (data.success) {
+                    token = data.data.token;
+                    document.getElementById('loginSection').style.display = 'none';
+                    document.getElementById('dashboardSection').style.display = 'block';
+                    document.getElementById('adminDisplayName').textContent = adminName;
+                    
+                    showToast('✅ Admin logged in successfully!');
+                    await refreshData();
+                    
+                    refreshInterval = setInterval(refreshData, 10000); // Increased from 5s to 10s to avoid rate limiting
+                } else {
+                    showToast('Login failed: ' + data.error, 'error');
+                }
+            } catch (error) {
+                showToast('Error: ' + error.message, 'error');
+            }
+        }
+
+        function logout() {
+            if (refreshInterval) clearInterval(refreshInterval);
+            token = '';
+            adminName = '';
+            document.getElementById('loginSection').style.display = 'block';
+            document.getElementById('dashboardSection').style.display = 'none';
+            document.getElementById('adminName').value = '';
+            showToast('Logged out successfully');
+        }
+
+        async function refreshData() {
+            await Promise.all([loadOrders(), loadDrones(), loadUsers()]);
+            updateStats();
+        }
+
+        async function loadOrders() {
+            try {
+                const response = await fetch(`${API_BASE}/admin/orders`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const data = await response.json();
+                if (data.success) {
+                    ordersData = data.data;
+                    displayOrders();
+                }
+            } catch (error) {
+                console.error('Error loading orders:', error);
+            }
+        }
+
+        async function loadDrones() {
+            try {
+                const response = await fetch(`${API_BASE}/admin/drones`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const data = await response.json();
+                if (data.success) {
+                    dronesData = data.data;
+                    displayDrones();
+                }
+            } catch (error) {
+                console.error('Error loading drones:', error);
+            }
+        }
+
+        async function loadUsers() {
+            try {
+                const response = await fetch(`${API_BASE}/admin/users`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const data = await response.json();
+                if (data.success) {
+                    usersData = data.data;
+                }
+            } catch (error) {
+                console.error('Error loading users:', error);
+            }
+        }
+
+        function updateStats() {
+            document.getElementById('statOrders').textContent = ordersData.length;
+            document.getElementById('statDrones').textContent = dronesData.length;
+            document.getElementById('statActive').textContent = ordersData.filter(o => o.status === 'in-transit').length;
+            document.getElementById('statUsers').textContent = usersData.length;
+        }
+
+        function displayOrders() {
+            const tbody = document.getElementById('ordersTable');
+            if (ordersData.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="7" style="text-align: center;">No orders found</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = ordersData.map(order => `
+                <tr>
+                    <td><code>${order.id.substring(0, 12)}...</code></td>
+                    <td><span class="status-badge status-${order.status.toLowerCase()}">${order.status}</span></td>
+                    <td>${order.enduserName}</td>
+                    <td>${order.origin.latitude.toFixed(2)}, ${order.origin.longitude.toFixed(2)}</td>
+                    <td>${order.destination.latitude.toFixed(2)}, ${order.destination.longitude.toFixed(2)}</td>
+                    <td>${order.assignedDroneId ? order.assignedDroneId.substring(0, 8) + '...' : 'None'}</td>
+                    <td>
+                        <div class="action-btns">
+                            <button class="btn-sm btn-primary" onclick="editOrder('${order.id}')">Edit</button>
+                        </div>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        function displayDrones() {
+            const tbody = document.getElementById('dronesTable');
+            if (dronesData.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="7" style="text-align: center;">No drones found</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = dronesData.map(drone => `
+                <tr>
+                    <td><code>${drone.id.substring(0, 12)}...</code></td>
+                    <td>${drone.userId}</td>
+                    <td><span class="status-badge status-${drone.status.toLowerCase()}">${drone.status}</span></td>
+                    <td>${drone.location.latitude.toFixed(2)}, ${drone.location.longitude.toFixed(2)}</td>
+                    <td>${drone.currentOrderId ? drone.currentOrderId.substring(0, 8) + '...' : 'None'}</td>
+                    <td>${new Date(drone.lastHeartbeat).toLocaleTimeString()}</td>
+                    <td>
+                        <div class="action-btns">
+                            ${drone.status === 'broken' ? 
+                                `<button class="btn-sm btn-success" onclick="markDrone('${drone.id}', 'fixed')">Fix</button>` :
+                                `<button class="btn-sm btn-danger" onclick="markDrone('${drone.id}', 'broken')">Break</button>`
+                            }
+                        </div>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        function switchTab(tabName) {
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+            
+            event.target.classList.add('active');
+            document.getElementById(tabName + 'Tab').classList.add('active');
+        }
+
+        function editOrder(orderId) {
+            const order = ordersData.find(o => o.id === orderId);
+            if (!order) return;
+
+            const modal = document.getElementById('editModal');
+            const form = document.getElementById('editForm');
+            
+            form.innerHTML = `
+                <p><strong>Order ID:</strong> ${orderId.substring(0, 20)}...</p>
+                <div class="form-group">
+                    <label>Pickup Latitude</label>
+                    <input type="number" id="editOriginLat" step="0.000001" value="${order.origin.latitude}">
+                </div>
+                <div class="form-group">
+                    <label>Pickup Longitude</label>
+                    <input type="number" id="editOriginLng" step="0.000001" value="${order.origin.longitude}">
+                </div>
+                <div class="form-group">
+                    <label>Destination Latitude</label>
+                    <input type="number" id="editDestLat" step="0.000001" value="${order.destination.latitude}">
+                </div>
+                <div class="form-group">
+                    <label>Destination Longitude</label>
+                    <input type="number" id="editDestLng" step="0.000001" value="${order.destination.longitude}">
+                </div>
+                <button onclick="saveOrder('${orderId}')">Save Changes</button>
+                <button onclick="closeModal()" style="background: #6c757d; margin-top: 10px;">Cancel</button>
+            `;
+            
+            modal.classList.add('active');
+        }
+
+        async function saveOrder(orderId) {
+            const origin = {
+                latitude: parseFloat(document.getElementById('editOriginLat').value),
+                longitude: parseFloat(document.getElementById('editOriginLng').value)
+            };
+            const destination = {
+                latitude: parseFloat(document.getElementById('editDestLat').value),
+                longitude: parseFloat(document.getElementById('editDestLng').value)
+            };
+
+            try {
+                const response = await fetch(`${API_BASE}/admin/orders/${orderId}/location`, {
+                    method: 'PUT',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ origin, destination })
+                });
+
+                const data = await response.json();
+                if (data.success) {
+                    showToast('✅ Order updated successfully!');
+                    closeModal();
+                    await loadOrders();
+                } else {
+                    showToast('❌ ' + data.error, 'error');
+                }
+            } catch (error) {
+                showToast('Error: ' + error.message, 'error');
+            }
+        }
+
+        async function markDrone(droneId, status) {
+            if (!confirm(`Are you sure you want to mark this drone as ${status}?`)) return;
+
+            try {
+                const response = await fetch(`${API_BASE}/admin/drones/${droneId}/status`, {
+                    method: 'PUT',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ status })
+                });
+
+                const data = await response.json();
+                if (data.success) {
+                    showToast(`✅ Drone marked as ${status}!`);
+                    await loadDrones();
+                    if (status === 'broken') await loadOrders();
+                } else {
+                    showToast('❌ ' + data.error, 'error');
+                }
+            } catch (error) {
+                showToast('Error: ' + error.message, 'error');
+            }
+        }
+
+        function closeModal() {
+            document.getElementById('editModal').classList.remove('active');
+        }
+
+        function showAllUsers() {
+            alert(`Total Users: ${usersData.length}\n\nTypes:\n- Endusers: ${usersData.filter(u => u.type === 'enduser').length}\n- Drones: ${usersData.filter(u => u.type === 'drone').length}\n- Admins: ${usersData.filter(u => u.type === 'admin').length}`);
+        }
+    </script>
+</body>
+</html>

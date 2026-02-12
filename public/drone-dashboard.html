@@ -1,0 +1,1075 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Drone Operator - Live Tracking</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+        }
+
+        header h1 {
+            font-size: 2.8rem;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 8px rgba(0,0,0,0.3);
+        }
+
+        .main-grid {
+            display: grid;
+            grid-template-columns: 480px 1fr;
+            gap: 20px;
+        }
+
+        .card {
+            background: white;
+            border-radius: 16px;
+            padding: 25px;
+            box-shadow: 0 15px 40px rgba(0,0,0,0.3);
+            margin-bottom: 20px;
+        }
+
+        .card h2 {
+            color: #1e3c72;
+            margin-bottom: 20px;
+            font-size: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        #map {
+            width: 100%;
+            height: 680px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 6px;
+            font-weight: 600;
+            color: #333;
+            font-size: 14px;
+        }
+
+        input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 14px;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: #1e3c72;
+            box-shadow: 0 0 0 3px rgba(30, 60, 114, 0.1);
+        }
+
+        button {
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 700;
+            transition: all 0.3s;
+            width: 100%;
+        }
+
+        button:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 18px rgba(30, 60, 114, 0.4);
+        }
+
+        button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn-danger {
+            background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, #28a745 0%, #218838 100%);
+        }
+
+        .drone-status {
+            background: linear-gradient(135deg, #e7f3ff 0%, #f0e7ff 100%);
+            padding: 20px;
+            border-radius: 12px;
+            margin-top: 15px;
+        }
+
+        .stat-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 1px solid #ddd;
+            font-size: 14px;
+        }
+
+        .stat-row:last-child {
+            border-bottom: none;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 6px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+
+        .status-idle { background: #28a745; color: white; }
+        .status-reserved { background: #ffc107; color: #212529; }
+        .status-in-transit { background: #007bff; color: white; }
+
+        .job-card {
+            background: #f8f9fa;
+            border: 2px solid #dee2e6;
+            border-radius: 12px;
+            padding: 18px;
+            margin-bottom: 15px;
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+
+        .job-card:hover {
+            border-color: #1e3c72;
+            box-shadow: 0 4px 12px rgba(30, 60, 114, 0.2);
+            transform: translateY(-2px);
+        }
+
+        .job-card.selected {
+            background: #fff3cd;
+            border-color: #ffc107;
+            border-width: 3px;
+        }
+
+        .job-card.current {
+            background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%);
+            border-color: #28a745;
+            border-width: 3px;
+        }
+
+        .job-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
+        .job-id {
+            font-family: 'Courier New', monospace;
+            font-weight: 700;
+            color: #1e3c72;
+            font-size: 13px;
+        }
+
+        .job-details {
+            margin-bottom: 12px;
+            font-size: 13px;
+            line-height: 1.6;
+        }
+
+        .job-location {
+            display: flex;
+            gap: 8px;
+            margin: 6px 0;
+            align-items: flex-start;
+        }
+
+        .job-distance {
+            background: #007bff;
+            color: white;
+            padding: 6px 12px;
+            border-radius: 8px;
+            font-weight: 700;
+            text-align: center;
+            margin-top: 10px;
+            font-size: 14px;
+        }
+
+        .job-actions {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+            margin-top: 12px;
+        }
+
+        .job-actions button {
+            font-size: 13px;
+            padding: 10px;
+        }
+
+        .route-info {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            margin-top: 15px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .route-step {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding: 12px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            margin-bottom: 10px;
+        }
+
+        .route-step-number {
+            width: 35px;
+            height: 35px;
+            background: #1e3c72;
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 16px;
+        }
+
+        .route-step.active .route-step-number {
+            background: #ffc107;
+            color: #212529;
+        }
+
+        .route-step.completed .route-step-number {
+            background: #28a745;
+        }
+
+        .route-step-content {
+            flex: 1;
+        }
+
+        .route-step-title {
+            font-weight: 700;
+            margin-bottom: 4px;
+            font-size: 14px;
+        }
+
+        .route-step-address {
+            font-size: 13px;
+            color: #666;
+        }
+
+        .toast {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            background: #28a745;
+            color: white;
+            padding: 18px 24px;
+            border-radius: 10px;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.3);
+            display: none;
+            animation: slideIn 0.4s ease-out;
+            z-index: 2000;
+            font-weight: 600;
+        }
+
+        @keyframes slideIn {
+            from { transform: translateX(400px); }
+            to { transform: translateX(0); }
+        }
+
+        .toast.error { background: #dc3545; }
+
+        .login-section {
+            max-width: 500px;
+            margin: 50px auto;
+        }
+
+        .dashboard-section {
+            display: none;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: #6c757d;
+        }
+
+        @media (max-width: 1200px) {
+            .main-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1> Drone Operator Dashboard</h1>
+            <p>Real-Time Delivery Tracking & Management</p>
+        </header>
+
+        <!-- Login Section -->
+        <div id="loginSection" class="login-section">
+            <div class="card">
+                <h2> Drone Operator Login</h2>
+                <div class="form-group">
+                    <label>Drone ID / Name</label>
+                    <input type="text" id="droneName" placeholder="e.g., drone001">
+                </div>
+                <button onclick="login()">Login & Start</button>
+            </div>
+        </div>
+
+        <!-- Dashboard Section -->
+        <div id="dashboardSection" class="dashboard-section">
+            <div class="main-grid">
+                <!-- Left Panel -->
+                <div>
+                    <!-- Drone Info -->
+                    <div class="card">
+                        <h2> Drone Status</h2>
+                        <div class="drone-status">
+                            <div class="stat-row">
+                                <span><strong>Drone:</strong></span>
+                                <span id="droneId">--</span>
+                            </div>
+                            <div class="stat-row">
+                                <span><strong>Status:</strong></span>
+                                <span id="droneStatusBadge" class="status-badge status-idle">IDLE</span>
+                            </div>
+                            <div class="stat-row">
+                                <span><strong>Current Job:</strong></span>
+                                <span id="currentJobId">None</span>
+                            </div>
+                        </div>
+                        <button onclick="logout()" class="btn-danger" style="margin-top: 15px; width: 100%;">Logout</button>
+                    </div>
+
+                    <!-- Drone Controls -->
+                    <div class="card">
+                        <h2>🎮 Drone Controls</h2>
+                        <div style="display: flex; flex-direction: column; gap: 10px;">
+                            <button onclick="updateLocationManually()" class="btn-success" style="width: 100%;">
+                                📍 Update My Location
+                            </button>
+                            <button onclick="markDroneBroken()" class="btn-danger" style="width: 100%;">
+                                🔧 Mark as Broken
+                            </button>
+                        </div>
+                        <div id="locationStatus" style="margin-top: 12px; padding: 10px; background: #e7f3ff; border-radius: 6px; font-size: 0.9rem; display: none;">
+                            <strong>Current Location:</strong><br>
+                            <span id="currentLat">--</span>, <span id="currentLng">--</span>
+                        </div>
+                    </div>
+
+                    <!-- Current Job Card -->
+                    <div id="currentJobCard" class="hidden">
+                        <div class="card">
+                            <h2>⭐ Current Delivery</h2>
+                            <div id="currentJobContent"></div>
+                        </div>
+                    </div>
+
+                    <!-- Available Jobs -->
+                    <div class="card">
+                        <h2>📦 Available Jobs</h2>
+                        <div id="jobsList">
+                            <div class="empty-state">
+                                <h3>No jobs available</h3>
+                                <p>Check back later</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right Panel - Map & Route -->
+                <div>
+                    <div class="card">
+                        <h2> Live Tracking Map</h2>
+                        <div id="map"></div>
+                    </div>
+
+                    <div id="routeInfo" class="route-info hidden">
+                        <h3 style="margin-bottom: 15px; color: #1e3c72;">📍 Delivery Route</h3>
+                        <div id="routeSteps"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Toast -->
+        <div id="toast" class="toast"></div>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:3000/api';
+        let token = '';
+        let droneName = '';
+        let droneLocation = null;
+        let currentOrder = null;
+        let availableOrders = [];
+        let refreshInterval = null;
+        let lastRefreshTime = 0;
+        const REFRESH_INTERVAL_MS = 5000; // Minimum 5 seconds between refreshes
+        
+        let map = null;
+        let droneMarker = null;
+        let pickupMarker = null;
+        let destinationMarker = null;
+        let directionsService = null;
+        let directionsRenderer = null;
+
+        function showToast(message, type = 'success') {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.className = 'toast ' + (type === 'error' ? 'error' : '');
+            toast.style.display = 'block';
+            setTimeout(() => toast.style.display = 'none', 4000);
+        }
+
+        function initMap() {
+            // Initialize map
+            map = new google.maps.Map(document.getElementById('map'), {
+                center: { lat: 39.8283, lng: -98.5795 },
+                zoom: 5,
+                styles: [
+                    {
+                        featureType: "poi",
+                        elementType: "labels",
+                        stylers: [{ visibility: "off" }]
+                    }
+                ]
+            });
+
+            directionsService = new google.maps.DirectionsService();
+            directionsRenderer = new google.maps.DirectionsRenderer({
+                map: map,
+                suppressMarkers: true,
+                polylineOptions: {
+                    strokeColor: '#1e3c72',
+                    strokeWeight: 5
+                }
+            });
+
+            // Get drone's location
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(
+                    (position) => {
+                        droneLocation = {
+                            lat: position.coords.latitude,
+                            lng: position.coords.longitude
+                        };
+                        
+                        map.setCenter(droneLocation);
+                        map.setZoom(12);
+                        
+                        // Add drone marker
+                        dronemarker = new google.maps.Marker({
+                            position: droneLocation,
+                            map: map,
+                            icon: {
+                                url: 'data:image/svg+xml;charset=UTF-8,' + encodeURIComponent(
+                                    '<svg xmlns="http://www.w3.org/2000/svg" width="40" height="40"><circle cx="20" cy="20" r="15" fill="%231e3c72" stroke="white" stroke-width="3"/><text x="20" y="26" text-anchor="middle" fill="white" font-size="16" font-weight="bold">🚁</text></svg>'
+                                ),
+                                scaledSize: new google.maps.Size(40, 40)
+                            },
+                            title: 'Your Drone Location',
+                            zIndex: 1000
+                        });
+                        
+                        // Update location on server
+                        updateLocationOnServer(droneLocation.lat, droneLocation.lng);
+                    },
+                    () => {
+                        console.log('Location access denied, using default');
+                        droneLocation = { lat: 39.8283, lng: -98.5795 };
+                    }
+                );
+            }
+        }
+
+        async function login() {
+            droneName = document.getElementById('droneName').value.trim();
+            if (!droneName) {
+                showToast('Please enter drone name', 'error');
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_BASE}/auth/login`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name: droneName, type: 'drone' })
+                });
+
+                const data = await response.json();
+                if (data.success) {
+                    token = data.data.token;
+                    
+                    document.getElementById('loginSection').style.display = 'none';
+                    document.getElementById('dashboardSection').style.display = 'block';
+                    document.getElementById('droneId').textContent = droneName;
+                    
+                    showToast('✅ Drone logged in successfully!');
+                    
+                    initMap();
+                    await refreshData();
+                    
+                    refreshInterval = setInterval(refreshData, 10000); // Increased from 5s to 10s to avoid rate limiting
+                } else {
+                    showToast('Login failed: ' + data.error, 'error');
+                }
+            } catch (error) {
+                showToast('Error: ' + error.message, 'error');
+            }
+        }
+
+        function logout() {
+            if (refreshInterval) clearInterval(refreshInterval);
+            token = '';
+            droneName = '';
+            document.getElementById('loginSection').style.display = 'block';
+            document.getElementById('dashboardSection').style.display = 'none';
+            document.getElementById('droneName').value = '';
+            showToast('Logged out successfully');
+        }
+
+        async function refreshData() {
+            await Promise.all([loadCurrentJob(), loadAvailableJobs()]);
+        }
+
+        async function loadCurrentJob() {
+            try {
+                const response = await fetch(`${API_BASE}/drone/order`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+
+                const data = await response.json();
+                if (data.success && data.data) {
+                    currentOrder = data.data;
+                    displayCurrentJob();
+                } else {
+                    currentOrder = null;
+                    document.getElementById('currentJobCard').classList.add('hidden');
+                    document.getElementById('currentJobId').textContent = 'None';
+                    document.getElementById('droneStatusBadge').className = 'status-badge status-idle';
+                    document.getElementById('droneStatusBadge').textContent = 'IDLE';
+                }
+            } catch (error) {
+                console.error('Error loading current job:', error);
+            }
+        }
+
+        async function loadAvailableJobs() {
+            try {
+                // Use drone endpoint to get available pending jobs
+                const response = await fetch(`${API_BASE}/drone/jobs`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+
+                const data = await response.json();
+                if (data.success) {
+                    availableOrders = data.data || [];
+                    displayAvailableJobs();
+                }
+            } catch (error) {
+                console.error('Error loading jobs:', error);
+            }
+        }
+
+        function displayCurrentJob() {
+            if (!currentOrder) return;
+
+            document.getElementById('currentJobCard').classList.remove('hidden');
+            document.getElementById('currentJobId').textContent = currentOrder.id.substring(0, 12) + '...';
+            
+            const badge = document.getElementById('droneStatusBadge');
+            badge.className = 'status-badge status-' + currentOrder.status.toLowerCase();
+            badge.textContent = currentOrder.status.toUpperCase();
+
+            const actions = currentOrder.status === 'reserved' ? `
+                <button onclick="pickupOrder()" class="btn-success">📦 Pick Up Order</button>
+            ` : currentOrder.status === 'in-transit' ? `
+                <div class="job-actions">
+                    <button onclick="markDelivered()" class="btn-success">✅ Delivered</button>
+                    <button onclick="markFailed()" class="btn-danger">❌ Failed</button>
+                </div>
+            ` : '';
+
+            document.getElementById('currentJobContent').innerHTML = `
+                <div class="job-card current">
+                    <div class="job-header">
+                        <span class="job-id">📦 ${currentOrder.id.substring(0, 16)}...</span>
+                    </div>
+                    <div class="job-details">
+                        <div class="job-location">
+                            <span>📍</span>
+                            <div>
+                                <strong>Pickup:</strong><br>
+                                ${currentOrder.origin.latitude.toFixed(4)}, ${currentOrder.origin.longitude.toFixed(4)}
+                            </div>
+                        </div>
+                        <div class="job-location">
+                            <span>🎯</span>
+                            <div>
+                                <strong>Destination:</strong><br>
+                                ${currentOrder.destination.latitude.toFixed(4)}, ${currentOrder.destination.longitude.toFixed(4)}
+                            </div>
+                        </div>
+                    </div>
+                    ${actions}
+                </div>
+            `;
+
+            // Show route on map
+            showRouteOnMap(currentOrder);
+        }
+
+        function displayAvailableJobs() {
+            const list = document.getElementById('jobsList');
+            
+            if (availableOrders.length === 0 || currentOrder) {
+                list.innerHTML = '<div class="empty-state"><h3>No available jobs</h3><p>Currently assigned or no pending orders</p></div>';
+                return;
+            }
+
+            list.innerHTML = availableOrders.map(job => {
+                const distance = droneLocation ? 
+                    calculateDistance(droneLocation.lat, droneLocation.lng, job.origin.latitude, job.origin.longitude) : 
+                    '--';
+                
+                return `
+                    <div class="job-card" onclick="selectJob('${job.id}')">
+                        <div class="job-header">
+                            <span class="job-id">📦 ${job.id.substring(0, 16)}...</span>
+                        </div>
+                        <div class="job-details">
+                            <div class="job-location">
+                                <span>📍</span>
+                                <div>
+                                    <strong>Pickup:</strong><br>
+                                    ${job.origin.latitude.toFixed(4)}, ${job.origin.longitude.toFixed(4)}
+                                </div>
+                            </div>
+                            <div class="job-location">
+                                <span>🎯</span>
+                                <div>
+                                    <strong>Destination:</strong><br>
+                                    ${job.destination.latitude.toFixed(4)}, ${job.destination.longitude.toFixed(4)}
+                                </div>
+                            </div>
+                        </div>
+                        <div class="job-distance">📏 Distance: ${distance}</div>
+                        <button onclick="reserveJob('${job.id}'); event.stopPropagation();" style="margin-top: 10px;">
+                            Reserve This Job
+                        </button>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function selectJob(jobId) {
+            const job = availableOrders.find(j => j.id === jobId);
+            if (!job) return;
+
+            // Clear previous markers
+            if (pickupMarker) pickupMarker.setMap(null);
+            if (destinationMarker) destinationMarker.setMap(null);
+            if (directionsRenderer) directionsRenderer.setDirections({routes: []});
+
+            // Show pickup marker
+            pickupMarker = new google.maps.Marker({
+                position: { lat: job.origin.latitude, lng: job.origin.longitude },
+                map: map,
+                icon: {
+                    url: 'http://maps.google.com/mapfiles/ms/icons/blue-dot.png'
+                },
+                title: 'Pickup Location'
+            });
+
+            // Show destination marker
+            destinationMarker = new google.maps.Marker({
+                position: { lat: job.destination.latitude, lng: job.destination.longitude },
+                map: map,
+                icon: {
+                    url: 'http://maps.google.com/mapfiles/ms/icons/red-dot.png'
+                },
+                title: 'Destination'
+            });
+
+            // Draw route
+            if (droneLocation) {
+                const waypoints = [
+                    { location: { lat: job.origin.latitude, lng: job.origin.longitude }, stopover: true }
+                ];
+
+                directionsService.route({
+                    origin: droneLocation,
+                    destination: { lat: job.destination.latitude, lng: job.destination.longitude },
+                    waypoints: waypoints,
+                    travelMode: google.maps.TravelMode.DRIVING
+                }, (result, status) => {
+                    if (status === 'OK') {
+                        directionsRenderer.setDirections(result);
+                    }
+                });
+            }
+
+            // Fit bounds
+            const bounds = new google.maps.LatLngBounds();
+            if (droneLocation) bounds.extend(droneLocation);
+            bounds.extend({ lat: job.origin.latitude, lng: job.origin.longitude });
+            bounds.extend({ lat: job.destination.latitude, lng: job.destination.longitude });
+            map.fitBounds(bounds);
+        }
+
+        async function reserveJob(jobId) {
+            try {
+                const response = await fetch(`${API_BASE}/drone/reserve`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                const data = await response.json();
+                if (data.success) {
+                    showToast('✅ Job reserved successfully!');
+                    await refreshData();
+                } else {
+                    showToast('❌ ' + data.error, 'error');
+                }
+            } catch (error) {
+                showToast('Error: ' + error.message, 'error');
+            }
+        }
+
+        async function pickupOrder() {
+            try {
+                const response = await fetch(`${API_BASE}/drone/grab`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ fromLocation: 'origin' })
+                });
+
+                const data = await response.json();
+                if (data.success) {
+                    showToast('✅ Order picked up! Now in transit.');
+                    await refreshData();
+                } else {
+                    showToast('❌ ' + data.error, 'error');
+                }
+            } catch (error) {
+                showToast('Error: ' + error.message, 'error');
+            }
+        }
+
+        async function markDelivered() {
+            try {
+                const response = await fetch(`${API_BASE}/drone/order/status`, {
+                    method: 'PUT',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ status: 'delivered' })
+                });
+
+                const data = await response.json();
+                if (data.success) {
+                    showToast('✅ Order delivered successfully!');
+                    currentOrder = null;
+                    await refreshData();
+                } else {
+                    showToast('❌ ' + data.error, 'error');
+                }
+            } catch (error) {
+                showToast('Error: ' + error.message, 'error');
+            }
+        }
+
+        async function markFailed() {
+            try {
+                const response = await fetch(`${API_BASE}/drone/order/status`, {
+                    method: 'PUT',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ status: 'failed' })
+                });
+
+                const data = await response.json();
+                if (data.success) {
+                    showToast('Order marked as failed', 'error');
+                    currentOrder = null;
+                    await refreshData();
+                } else {
+                    showToast('❌ ' + data.error, 'error');
+                }
+            } catch (error) {
+                showToast('Error: ' + error.message, 'error');
+            }
+        }
+
+        async function markDroneBroken() {
+            if (!confirm('⚠️ Mark drone as BROKEN? This will create a handoff job for any current order.')) {
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_BASE}/drone/broken`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                const data = await response.json();
+                if (data.success) {
+                    showToast('🔧 Drone marked as BROKEN. Handoff job created.', 'error');
+                    currentOrder = null;
+                    await refreshData();
+                    
+                    // Update UI
+                    const badge = document.getElementById('droneStatusBadge');
+                    badge.className = 'status-badge status-failed';
+                    badge.textContent = 'BROKEN';
+                } else {
+                    showToast('❌ ' + data.error, 'error');
+                }
+            } catch (error) {
+                showToast('Error: ' + error.message, 'error');
+            }
+        }
+
+        async function updateLocationManually() {
+            if (!navigator.geolocation) {
+                showToast('❌ Geolocation not supported', 'error');
+                return;
+            }
+
+            try {
+                navigator.geolocation.getCurrentPosition(async (position) => {
+                    const newLocation = {
+                        latitude: position.coords.latitude,
+                        longitude: position.coords.longitude
+                    };
+
+                    const response = await fetch(`${API_BASE}/drone/location`, {
+                        method: 'PUT',
+                        headers: {
+                            'Authorization': `Bearer ${token}`,
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(newLocation)
+                    });
+
+                    const data = await response.json();
+                    if (data.success) {
+                        droneLocation = {
+                            lat: newLocation.latitude,
+                            lng: newLocation.longitude
+                        };
+                        
+                        // Update UI
+                        document.getElementById('locationStatus').style.display = 'block';
+                        document.getElementById('currentLat').textContent = newLocation.latitude.toFixed(6);
+                        document.getElementById('currentLng').textContent = newLocation.longitude.toFixed(6);
+                        
+                        // Update marker on map
+                        updateDroneMarkerOnMap();
+                        
+                        showToast('✅ Location updated: ' + newLocation.latitude.toFixed(4) + ', ' + newLocation.longitude.toFixed(4));
+                    } else {
+                        showToast('❌ ' + data.error, 'error');
+                    }
+                }, (error) => {
+                    showToast('❌ Could not get location: ' + error.message, 'error');
+                });
+            } catch (error) {
+                showToast('Error: ' + error.message, 'error');
+            }
+        }
+
+        function updateDroneMarkerOnMap() {
+            if (!droneLocation || !map) return;
+
+            if (droneMarker) {
+                droneMarker.setPosition({ lat: droneLocation.lat, lng: droneLocation.lng });
+            } else {
+                droneMarker = new google.maps.Marker({
+                    position: { lat: droneLocation.lat, lng: droneLocation.lng },
+                    map: map,
+                    icon: {
+                        path: google.maps.SymbolPath.FORWARD_CLOSED_ARROW,
+                        scale: 6,
+                        fillColor: '#4CAF50',
+                        fillOpacity: 1,
+                        strokeColor: 'white',
+                        strokeWeight: 2,
+                        rotation: 0
+                    },
+                    title: 'Drone Location'
+                });
+            }
+
+            map.panTo({ lat: droneLocation.lat, lng: droneLocation.lng });
+        }
+
+
+        function showRouteOnMap(order) {
+            // Clear previous
+            if (pickupMarker) pickupMarker.setMap(null);
+            if (destinationMarker) destinationMarker.setMap(null);
+
+            // Add markers
+            pickupMarker = new google.maps.Marker({
+                position: { lat: order.origin.latitude, lng: order.origin.longitude },
+                map: map,
+                icon: { url: 'http://maps.google.com/mapfiles/ms/icons/blue-dot.png' },
+                title: 'Pickup'
+            });
+
+            destinationMarker = new google.maps.Marker({
+                position: { lat: order.destination.latitude, lng: order.destination.longitude },
+                map: map,
+                icon: { url: 'http://maps.google.com/mapfiles/ms/icons/red-dot.png' },
+                title: 'Destination'
+            });
+
+            // Draw route
+            if (droneLocation) {
+                const waypoints = order.status === 'reserved' ? 
+                    [{ location: { lat: order.origin.latitude, lng: order.origin.longitude }, stopover: true }] : 
+                    [];
+
+                const origin = order.status === 'reserved' ? droneLocation : 
+                    { lat: order.origin.latitude, lng: order.origin.longitude };
+
+                directionsService.route({
+                    origin: origin,
+                    destination: { lat: order.destination.latitude, lng: order.destination.longitude },
+                    waypoints: waypoints,
+                    travelMode: google.maps.TravelMode.DRIVING
+                }, (result, status) => {
+                    if (status === 'OK') {
+                        directionsRenderer.setDirections(result);
+                        document.getElementById('routeInfo').classList.remove('hidden');
+                        updateRouteSteps(order);
+                    }
+                });
+            }
+        }
+
+        function updateRouteSteps(order) {
+            const steps = order.status === 'reserved' ? `
+                <div class="route-step active">
+                    <div class="route-step-number">1</div>
+                    <div class="route-step-content">
+                        <div class="route-step-title">Go to Pickup Location</div>
+                        <div class="route-step-address">${order.origin.latitude.toFixed(4)}, ${order.origin.longitude.toFixed(4)}</div>
+                    </div>
+                </div>
+                <div class="route-step">
+                    <div class="route-step-number">2</div>
+                    <div class="route-step-content">
+                        <div class="route-step-title">Deliver to Destination</div>
+                        <div class="route-step-address">${order.destination.latitude.toFixed(4)}, ${order.destination.longitude.toFixed(4)}</div>
+                    </div>
+                </div>
+            ` : `
+                <div class="route-step completed">
+                    <div class="route-step-number">✓</div>
+                    <div class="route-step-content">
+                        <div class="route-step-title">Picked Up</div>
+                        <div class="route-step-address">Package collected</div>
+                    </div>
+                </div>
+                <div class="route-step active">
+                    <div class="route-step-number">2</div>
+                    <div class="route-step-content">
+                        <div class="route-step-title">Delivering Now</div>
+                        <div class="route-step-address">${order.destination.latitude.toFixed(4)}, ${order.destination.longitude.toFixed(4)}</div>
+                    </div>
+                </div>
+            `;
+
+            document.getElementById('routeSteps').innerHTML = steps;
+        }
+
+        async function updateLocationOnServer(lat, lng) {
+            if (!token) return;
+            
+            try {
+                await fetch(`${API_BASE}/drone/location`, {
+                    method: 'PUT',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ latitude: lat, longitude: lng })
+                });
+            } catch (error) {
+                console.error('Error updating location:', error);
+            }
+        }
+
+        function calculateDistance(lat1, lon1, lat2, lon2) {
+            const R = 6371; // km
+            const dLat = (lat2 - lat1) * Math.PI / 180;
+            const dLon = (lon2 - lon1) * Math.PI / 180;
+            const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+                Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+                Math.sin(dLon/2) * Math.sin(dLon/2);
+            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+            const d = R * c;
+            return d.toFixed(1) + ' km';
+        }
+    </script>
+    
+    <script async defer
+        src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAdlfTHUOg2PbRxoIDr78hCI9feJtWfnrU&libraries=places&callback=initMap">
+    </script>
+</body>
+</html>

@@ -1,0 +1,1144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simple Tracking - Interactive Map Selection</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .card {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        h1, h2 {
+            color: #333;
+            margin-bottom: 15px;
+        }
+        .login-section {
+            max-width: 400px;
+            margin: 50px auto;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            color: #555;
+            font-weight: 500;
+        }
+        input, select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+        button {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: background 0.3s;
+        }
+        button:hover { background: #5568d3; }
+        button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+        .info-banner {
+            background: #d1ecf1;
+            border: 1px solid #bee5eb;
+            color: #0c5460;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+        .order-info {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+        .info-item {
+            background: #f8f9fa;
+            padding: 12px;
+            border-radius: 5px;
+            border-left: 4px solid #667eea;
+        }
+        .info-item label {
+            font-size: 12px;
+            text-transform: uppercase;
+            color: #6c757d;
+            margin-bottom: 5px;
+        }
+        .info-item .value {
+            font-size: 16px;
+            font-weight: 600;
+            color: #333;
+        }
+        .status-badge {
+            display: inline-block;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+        .status-pending { background: #ffc107; color: #000; }
+        .status-reserved { background: #17a2b8; color: #fff; }
+        .status-picked_up { background: #007bff; color: #fff; }
+        .status-in_transit { background: #28a745; color: #fff; }
+        .status-delivered { background: #6c757d; color: #fff; }
+        .status-failed { background: #dc3545; color: #fff; }
+        
+        .coords {
+            font-family: 'Courier New', monospace;
+            background: #e9ecef;
+            padding: 8px;
+            border-radius: 3px;
+            display: inline-block;
+            margin-top: 5px;
+        }
+        .actions {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-top: 20px;
+        }
+        .progress-bar {
+            display: flex;
+            justify-content: space-between;
+            margin: 20px 0;
+            position: relative;
+        }
+        .progress-step {
+            flex: 1;
+            text-align: center;
+            position: relative;
+        }
+        .progress-step::before {
+            content: '';
+            position: absolute;
+            top: 15px;
+            left: 50%;
+            width: 100%;
+            height: 2px;
+            background: #ddd;
+            z-index: -1;
+        }
+        .progress-step:first-child::before { display: none; }
+        .progress-step.active .step-circle {
+            background: #667eea;
+            color: white;
+        }
+        .progress-step.completed .step-circle {
+            background: #28a745;
+            color: white;
+        }
+        .step-circle {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            background: #ddd;
+            color: #666;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+        .step-label {
+            font-size: 12px;
+            color: #666;
+        }
+        .hidden { display: none; }
+        .alert {
+            padding: 12px;
+            border-radius: 5px;
+            margin: 10px 0;
+        }
+        .alert-danger {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        .alert-success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .user-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        .location-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 15px 0;
+        }
+        .location-table th,
+        .location-table td {
+            padding: 10px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+        .location-table th {
+            background: #f8f9fa;
+            font-weight: 600;
+        }
+        .refresh-info {
+            text-align: center;
+            color: #6c757d;
+            font-size: 14px;
+            margin-top: 10px;
+        }
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+        }
+        .modal-content {
+            background-color: #fefefe;
+            margin: 3% auto;
+            padding: 20px;
+            border-radius: 10px;
+            width: 90%;
+            max-width: 900px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+       .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #667eea;
+            padding-bottom: 10px;
+        }
+        .close {
+            color: #aaa;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        .close:hover { color: #000; }
+        .map-canvas {
+            width: 100%;
+            height: 400px;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            cursor: crosshair;
+            background: linear-gradient(180deg, #87CEEB 0%, #98D8C8 100%);
+            position: relative;
+        }
+        .map-legend {
+            background: white;
+            padding: 10px;
+            border-radius: 5px;
+            margin-top: 10px;
+            font-size: 12px;
+        }
+        .coord-display {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin: 15px 0;
+        }
+        .location-section {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            border: 2px solid #ddd;
+            transition: all 0.3s;
+        }
+        .location-section.active {
+            border-color: #667eea;
+            box-shadow: 0 0 10px rgba(102, 126, 234, 0.3);
+        }
+        .location-section.completed {
+            border-color: #28a745;
+            background: #f0fff4;
+        }
+        .location-section h4 {
+            margin: 0 0 10px 0;
+            font-size: 14px;
+            color: #667eea;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .location-section.completed h4 {
+            color: #28a745;
+        }
+        .coord-field {
+            background: #f8f9fa;
+            padding: 8px;
+            border-radius: 5px;
+            margin-bottom: 8px;
+        }
+        .coord-field label {
+            font-size: 10px;
+            text-transform: uppercase;
+            color: #6c757d;
+            display: block;
+            margin-bottom: 3px;
+        }
+        .coord-field .value {
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            font-weight: bold;
+            color: #333;
+        }
+        .step-indicator {
+            display: inline-block;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background: #667eea;
+            color: white;
+            text-align: center;
+            line-height: 24px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+        .location-section.completed .step-indicator {
+            background: #28a745;
+        }
+        .map-instructions {
+            background: #fff3cd;
+            border: 1px solid #ffc107;
+            color: #856404;
+            padding: 12px;
+            border-radius: 5px;
+            margin-bottom: 15px;
+            font-size: 14px;
+            font-weight: 500;
+        }
+        .success-toast {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: #28a745;
+            color: white;
+            padding: 15px 20px;
+            border-radius: 5px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+            display: none;
+            animation: slideIn 0.3s ease-out;
+            z-index: 2000;
+        }
+        @keyframes slideIn {
+            from { transform: translateX(400px); }
+            to { transform: translateX(0); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Login Section -->
+        <div id="loginSection" class="card login-section">
+            <h1>📍 Simple Tracking</h1>
+            <p style="margin-bottom: 20px; color: #6c757d;">
+                Interactive map with click-to-select locations
+            </p>
+            
+            <div class="form-group">
+                <label>Username</label>
+                <input type="text" id="username" placeholder="e.g., drone-001 or john-doe">
+            </div>
+            
+            <div class="form-group">
+                <label>User Type</label>
+                <select id="userType">
+                    <option value="drone">Drone</option>
+                    <option value="enduser">End User</option>
+                    <option value="admin">Admin</option>
+                </select>
+            </div>
+            
+            <button onclick="login()" style="width: 100%;">Login</button>
+        </div>
+
+        <!-- Dashboard Section -->
+        <div id="dashboardSection" class="hidden">
+            <div class="card">
+                <div class="user-header">
+                    <div>
+                        <h1>📊 Order Tracking Dashboard</h1>
+                        <div id="userInfo"></div>
+                    </div>
+                    <button onclick="logout()">Logout</button>
+                </div>
+            </div>
+
+            <div class="info-banner">
+                ℹ️ Click on the map to select locations - no Google Maps API required!
+            </div>
+
+            <!-- Order Display -->
+            <div id="orderCard" class="card hidden">
+                <h2>Current Order</h2>
+                <div id="progressBar" class="progress-bar"></div>
+                <div id="orderInfo" class="order-info"></div>
+                
+                <h3 style="margin-top: 20px;">Locations</h3>
+                <table class="location-table">
+                    <thead>
+                        <tr>
+                            <th>Type</th>
+                            <th>Latitude</th>
+                            <th>Longitude</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="locationTable">
+                    </tbody>
+                </table>
+
+                <div class="actions" id="droneActions">
+                    <button onclick="reserveJob()" id="btnReserve">Reserve Job</button>
+                    <button onclick="pickupOrder()" id="btnPickup" class="hidden">Pick Up Order</button>
+                    <button onclick="updateLocation()" id="btnUpdateLocation" class="hidden">Update Location</button>
+                    <button onclick="markDelivered()" id="btnDelivered" class="hidden">Mark Delivered</button>
+                    <button onclick="markFailed()" id="btnFailed" class="hidden">Mark Failed</button>
+                </div>
+
+                <div class="actions" id="enduserActions">
+                    <button onclick="submitOrder()" id="btnSubmitOrder">📦 Create New Order</button>
+                </div>
+
+                <div class="refresh-info">
+                    🔄 Auto-refresh every 5 seconds
+                </div>
+            </div>
+
+            <div id="noOrderCard" class="card">
+                <p style="text-align: center; color: #6c757d; padding: 40px;">
+                    No active order. 
+                    <span id="actionHint"></span>
+                </p>
+            </div>
+        </div>
+
+        <!-- Order Submission Modal -->
+        <div id="locationModal" class="modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2>🗺️ Create New Delivery Order</h2>
+                    <span class="close" onclick="closeLocationModal()">&times;</span>
+                </div>
+                <div class="map-instructions" id="mapInstructions">
+                    <strong>Step 1:</strong> Click on the map to select the <strong>Pickup Location</strong> 📍
+                </div>
+                <canvas id="mapCanvas" class="map-canvas"></canvas>
+                
+                <div class="coord-display">
+                    <div class="location-section" id="pickupSection">
+                        <h4><span class="step-indicator">1</span> Pickup Location 📍</h4>
+                        <div class="coord-field">
+                            <label>Latitude</label>
+                            <div class="value" id="pickupLat">-- Click map to select --</div>
+                        </div>
+                        <div class="coord-field">
+                            <label>Longitude</label>
+                            <div class="value" id="pickupLng">--</div>
+                        </div>
+                    </div>
+                    
+                    <div class="location-section" id="destinationSection">
+                        <h4><span class="step-indicator">2</span> Destination 🎯</h4>
+                        <div class="coord-field">
+                            <label>Latitude</label>
+                            <div class="value" id="destinationLat">-- Select pickup first --</div>
+                        </div>
+                        <div class="coord-field">
+                            <label>Longitude</label>
+                            <div class="value" id="destinationLng">--</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="map-legend">
+                    <strong>Map Coverage:</strong> Latitude: 24.0° to 50.0° | Longitude: -125.0° to -66.0° (Approximate US Coverage)
+                    <br><strong>Legend:</strong> 📍 = Pickup | 🎯 = Destination
+                </div>
+                
+                <div style="display: flex; gap: 10px; margin-top: 15px;">
+                    <button onclick="submitOrderFromMap()" id="btnSubmitFromMap" style="flex: 1;" disabled>Submit Order</button>
+                    <button onclick="resetOrderForm()" style="flex: 1; background: #ffc107;">Reset</button>
+                    <button onclick="closeLocationModal()" style="flex: 1; background: #6c757d;">Cancel</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Success Toast -->
+        <div id="successToast" class="success-toast"></div>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:3000/api';
+        let token = '';
+        let username = '';
+        let userType = '';
+        let currentOrder = null;
+        let refreshInterval = null;
+        let orderLocations = { pickup: null, destination: null };
+        let currentStep = 'pickup'; // 'pickup' or 'destination'
+        let mapCanvas = null;
+        let mapCtx = null;
+        let pinMarkers = [];
+
+        // Map configuration (US bounds)
+        const MAP_CONFIG = {
+            minLat: 24.0,
+            maxLat: 50.0,
+            minLng: -125.0,
+            maxLng: -66.0
+        };
+
+        // Initialize map canvas
+        function initMap() {
+            mapCanvas = document.getElementById('mapCanvas');
+            mapCtx = mapCanvas.getContext('2d');
+            
+            // Set canvas size
+            mapCanvas.width = mapCanvas.offsetWidth;
+            mapCanvas.height = 400;
+            
+            // Draw initial map
+            drawMap();
+            
+            // Add click handler
+            mapCanvas.addEventListener('click', handleMapClick);
+        }
+
+        function drawMap() {
+            if (!mapCtx) return;
+            
+            const width = mapCanvas.width;
+            const height = mapCanvas.height;
+            
+            // Clear canvas
+            mapCtx.fillStyle = '#87CEEB';
+            mapCtx.fillRect(0, 0, width, height);
+            
+            // Draw grid
+            mapCtx.strokeStyle = '#ffffff40';
+            mapCtx.lineWidth = 1;
+            for (let i = 0; i < 10; i++) {
+                // Vertical lines
+                mapCtx.beginPath();
+                mapCtx.moveTo(width * i / 10, 0);
+                mapCtx.lineTo(width * i / 10, height);
+                mapCtx.stroke();
+                
+                // Horizontal lines
+                mapCtx.beginPath();
+                mapCtx.moveTo(0, height * i / 10);
+                mapCtx.lineTo(width, height * i / 10);
+                mapCtx.stroke();
+            }
+            
+            // Draw pin markers
+            pinMarkers.forEach(marker => {
+                drawPin(marker.x, marker.y, marker.color, marker.label);
+            });
+        }
+
+        function drawPin(x, y, color, label) {
+            if (!mapCtx) return;
+            
+            // Draw pin
+            mapCtx.fillStyle = color;
+            mapCtx.beginPath();
+            mapCtx.arc(x, y, 8, 0, Math.PI * 2);
+            mapCtx.fill();
+            
+            mapCtx.strokeStyle = 'white';
+            mapCtx.lineWidth = 2;
+            mapCtx.stroke();
+            
+            // Draw label
+            if (label) {
+                mapCtx.font = 'bold 20px Arial';
+                mapCtx.fillText(label, x - 10, y - 12);
+            }
+        }
+
+        function handleMapClick(event) {
+            const rect = mapCanvas.getBoundingClientRect();
+            const x = event.clientX - rect.left;
+            const y = event.clientY - rect.top;
+            
+            // Convert pixel coordinates to lat/lng
+            const lat = MAP_CONFIG.maxLat - (y / mapCanvas.height) * (MAP_CONFIG.maxLat - MAP_CONFIG.minLat);
+            const lng = MAP_CONFIG.minLng + (x / mapCanvas.width) * (MAP_CONFIG.maxLng - MAP_CONFIG.minLng);
+            
+            if (currentStep === 'pickup') {
+                // Set pickup location
+                orderLocations.pickup = { latitude: lat, longitude: lng, x, y };
+                
+                // Update UI
+                document.getElementById('pickupLat').textContent = lat.toFixed(6);
+                document.getElementById('pickupLng').textContent = lng.toFixed(6);
+                document.getElementById('pickupSection').classList.add('completed');
+                document.getElementById('pickupSection').classList.remove('active');
+                
+                // Move to destination step
+                currentStep = 'destination';
+                document.getElementById('destinationSection').classList.add('active');
+                document.getElementById('destinationLat').textContent = '-- Click map to select --';
+                document.getElementById('destinationLng').textContent = '--';
+                document.getElementById('mapInstructions').innerHTML = '<strong>Step 2:</strong> Click on the map to select the <strong>Destination</strong> 🎯';
+                
+                // Update markers
+                pinMarkers = [{ x, y, color: '#4CAF50', label: '📍' }];
+                drawMap();
+                
+            } else if (currentStep === 'destination') {
+                // Set destination location
+                orderLocations.destination = { latitude: lat, longitude: lng, x, y };
+                
+                // Update UI
+                document.getElementById('destinationLat').textContent = lat.toFixed(6);
+                document.getElementById('destinationLng').textContent = lng.toFixed(6);
+                document.getElementById('destinationSection').classList.add('completed');
+                document.getElementById('destinationSection').classList.remove('active');
+                
+                // Enable submit button
+                document.getElementById('btnSubmitFromMap').disabled = false;
+                document.getElementById('mapInstructions').innerHTML = '✅ <strong>Both locations selected!</strong> Click "Submit Order" to create the delivery.';
+                
+                // Update markers - show both
+                pinMarkers = [
+                    { x: orderLocations.pickup.x, y: orderLocations.pickup.y, color: '#4CAF50', label: '📍' },
+                    { x, y, color: '#F44336', label: '🎯' }
+                ];
+                drawMap();
+                
+                // Draw route line
+                if (mapCtx) {
+                    mapCtx.strokeStyle = '#667eea';
+                    mapCtx.lineWidth = 3;
+                    mapCtx.setLineDash([5, 5]);
+                    mapCtx.beginPath();
+                    mapCtx.moveTo(orderLocations.pickup.x, orderLocations.pickup.y);
+                    mapCtx.lineTo(x, y);
+                    mapCtx.stroke();
+                    mapCtx.setLineDash([]);
+                }
+            }
+        }
+
+        function showOrderModal() {
+            document.getElementById('locationModal').style.display = 'block';
+            
+            if (!mapCanvas) {
+                initMap();
+            }
+            
+            resetOrderForm();
+        }
+        
+        function resetOrderForm() {
+            // Reset data
+            orderLocations = { pickup: null, destination: null };
+            currentStep = 'pickup';
+            
+            // Reset UI
+            document.getElementById('pickupLat').textContent = '-- Click map to select --';
+            document.getElementById('pickupLng').textContent = '--';
+            document.getElementById('destinationLat').textContent = '-- Select pickup first --';
+            document.getElementById('destinationLng').textContent = '--';
+            
+            document.getElementById('pickupSection').classList.remove('completed', 'active');
+            document.getElementById('destinationSection').classList.remove('completed', 'active');
+            document.getElementById('pickupSection').classList.add('active');
+            
+            document.getElementById('btnSubmitFromMap').disabled = true;
+            document.getElementById('mapInstructions').innerHTML = '<strong>Step 1:</strong> Click on the map to select the <strong>Pickup Location</strong> 📍';
+            
+            pinMarkers = [];
+            drawMap();
+        }
+
+        function closeLocationModal() {
+            document.getElementById('locationModal').style.display = 'none';
+        }
+
+        async function submitOrderFromMap() {
+            if (!orderLocations.pickup || !orderLocations.destination) {
+                showToast('Please select both pickup and destination locations', 'warning');
+                return;
+            }
+            
+            try {
+                const response = await fetch(`${API_BASE}/enduser/orders`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        origin: {
+                            latitude: orderLocations.pickup.latitude,
+                            longitude: orderLocations.pickup.longitude
+                        },
+                        destination: {
+                            latitude: orderLocations.destination.latitude,
+                            longitude: orderLocations.destination.longitude
+                        }
+                    })
+                });
+
+                const data = await response.json();
+                
+                if (data.success) {
+                    showToast('✅ Order submitted successfully!');
+                    closeLocationModal();
+                    await refreshData();
+                } else {
+                    showToast('❌ ' + data.error, 'warning');
+                }
+            } catch (error) {
+                showToast('Error: ' + error.message, 'warning');
+            }
+        }
+
+        function showToast(message, type = 'success') {
+            const toast = document.getElementById('successToast');
+            toast.textContent = message;
+            toast.style.background = type === 'success' ? '#28a745' : '#ffc107';
+            toast.style.color = type === 'success' ? 'white' : '#856404';
+            toast.style.display = 'block';
+            
+            setTimeout(() => {
+                toast.style.display = 'none';
+            }, 3000);
+        }
+
+        async function login() {
+            username = document.getElementById('username').value.trim();
+            userType = document.getElementById('userType').value;
+
+            if (!username) {
+                showToast('Please enter a username', 'warning');
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_BASE}/auth/login`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name: username, type: userType })
+                });
+
+                const data = await response.json();
+                
+                if (data.success) {
+                    token = data.data.token;
+                    showToast('✅ Login successful!');
+                    document.getElementById('loginSection').style.display = 'none';
+                    document.getElementById('dashboardSection').classList.remove('hidden');
+                    
+                    document.getElementById('userInfo').innerHTML = `
+                        <strong>${data.data.name}</strong>
+                        <span class="status-badge status-in_transit">${data.data.type}</span>
+                    `;
+
+                    // Set action hint
+                    let hint = '';
+                    if (userType === 'drone') {
+                        hint = 'Click "Reserve Job" to start a delivery.';
+                        document.getElementById('droneActions').classList.remove('hidden');
+                        document.getElementById('enduserActions').classList.add('hidden');
+                    } else if (userType === 'enduser') {
+                        hint = 'Click "Create New Order" to submit a delivery request.';
+                        document.getElementById('droneActions').classList.add('hidden');
+                        document.getElementById('enduserActions').classList.remove('hidden');
+                    } else {
+                        document.getElementById('droneActions').classList.add('hidden');
+                        document.getElementById('enduserActions').classList.add('hidden');
+                    }
+                    document.getElementById('actionHint').textContent = hint;
+
+                    await refreshData();
+                    startAutoRefresh();
+                } else {
+                    showToast('Login failed: ' + data.error, 'warning');
+                }
+            } catch (error) {
+                showToast('Error: ' + error.message, 'warning');
+            }
+        }
+
+        function logout() {
+            stopAutoRefresh();
+            token = '';
+            currentOrder = null;
+            document.getElementById('loginSection').style.display = 'block';
+            document.getElementById('dashboardSection').classList.add('hidden');
+        }
+
+        async function refreshData() {
+            try {
+                if (userType === 'drone') {
+                    await loadDroneOrder();
+                } else if (userType === 'enduser') {
+                    await loadEnduserOrders();
+                } else if (userType === 'admin') {
+                    await loadAllOrders();
+                }
+            } catch (error) {
+                console.error('Refresh error:', error);
+            }
+        }
+
+        async function loadDroneOrder() {
+            try {
+                const response = await fetch(`${API_BASE}/drone/order`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+
+                const data = await response.json();
+                
+                if (data.success && data.data) {
+                    currentOrder = data.data;
+                    displayOrder(currentOrder);
+                    updateDroneButtons(currentOrder.status);
+                } else {
+                    showNoOrder();
+                }
+            } catch (error) {
+                console.error('Error loading order:', error);
+                showNoOrder();
+            }
+        }
+
+        async function loadEnduserOrders() {
+            try {
+                const response = await fetch(`${API_BASE}/enduser/orders`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+
+                const data = await response.json();
+                
+                if (data.success && data.data && data.data.length > 0) {
+                    // Show most recent order
+                    currentOrder = data.data[0];
+                    displayOrder(currentOrder);
+                } else {
+                    showNoOrder();
+                }
+            } catch (error) {
+                console.error('Error loading orders:', error);
+                showNoOrder();
+            }
+        }
+
+        async function loadAllOrders() {
+            try {
+                const response = await fetch(`${API_BASE}/admin/orders`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+
+                const data = await response.json();
+                
+                if (data.success && data.data && data.data.length > 0) {
+                    currentOrder = data.data[0];
+                    displayOrder(currentOrder);
+                } else {
+                    showNoOrder();
+                }
+            } catch (error) {
+                console.error('Error loading orders:', error);
+                showNoOrder();
+            }
+        }
+
+        function displayOrder(order) {
+            document.getElementById('orderCard').classList.remove('hidden');
+            document.getElementById('noOrderCard').classList.add('hidden');
+
+            // Progress bar
+            const steps = ['RESERVED', 'PICKED_UP', 'IN_TRANSIT', 'DELIVERED'];
+            const currentStep = steps.indexOf(order.status.toUpperCase());
+            
+            let progressHTML = '';
+            steps.forEach((step, index) => {
+                const isActive = index === currentStep;
+                const isCompleted = index < currentStep;
+                const className = isCompleted ? 'completed' : (isActive ? 'active' : '');
+                
+                progressHTML += `
+                    <div class="progress-step ${className}">
+                        <div class="step-circle">${index + 1}</div>
+                        <div class="step-label">${step.replace('_', ' ')}</div>
+                    </div>
+                `;
+            });
+            document.getElementById('progressBar').innerHTML = progressHTML;
+
+            // Order info
+            const eta = order.estimatedDeliveryTime 
+                ? new Date(order.estimatedDeliveryTime).toLocaleString()
+                : 'Not calculated';
+            
+            document.getElementById('orderInfo').innerHTML = `
+                <div class="info-item">
+                    <label>Order ID</label>
+                    <div class="value">${order.id}</div>
+                </div>
+                <div class="info-item">
+                    <label>Status</label>
+                    <div class="value">
+                        <span class="status-badge status-${order.status}">${order.status}</span>
+                    </div>
+                </div>
+                <div class="info-item">
+                    <label>Customer</label>
+                    <div class="value">${order.enduserName || 'N/A'}</div>
+                </div>
+                <div class="info-item">
+                    <label>Drone</label>
+                    <div class="value">${order.assignedDroneId || 'Not assigned'}</div>
+                </div>
+                <div class="info-item">
+                    <label>ETA</label>
+                    <div class="value">${eta}</div>
+                </div>
+                <div class="info-item">
+                    <label>Created</label>
+                    <div class="value">${new Date(order.createdAt).toLocaleString()}</div>
+                </div>
+            `;
+
+            // Location table
+            let locationHTML = `
+                <tr>
+                    <td><strong>📍 Pickup</strong></td>
+                    <td>${order.origin.latitude.toFixed(6)}</td>
+                    <td>${order.origin.longitude.toFixed(6)}</td>
+                    <td><span class="status-badge status-pending">Origin</span></td>
+                </tr>
+                <tr>
+                    <td><strong>🎯 Destination</strong></td>
+                    <td>${order.destination.latitude.toFixed(6)}</td>
+                    <td>${order.destination.longitude.toFixed(6)}</td>
+                    <td><span class="status-badge status-pending">Target</span></td>
+                </tr>
+            `;
+            
+            if (order.currentLocation) {
+                locationHTML += `
+                    <tr style="background: #e7f3ff;">
+                        <td><strong>🚁 Drone</strong></td>
+                        <td>${order.currentLocation.latitude.toFixed(6)}</td>
+                        <td>${order.currentLocation.longitude.toFixed(6)}</td>
+                        <td><span class="status-badge status-in_transit">Current</span></td>
+                    </tr>
+                `;
+            }
+
+            document.getElementById('locationTable').innerHTML = locationHTML;
+        }
+
+        function showNoOrder() {
+            document.getElementById('orderCard').classList.add('hidden');
+            document.getElementById('noOrderCard').classList.remove('hidden');
+        }
+
+        function updateDroneButtons(status) {
+            const btnPickup = document.getElementById('btnPickup');
+            const btnUpdate = document.getElementById('btnUpdateLocation');
+            const btnDelivered = document.getElementById('btnDelivered');
+            const btnFailed = document.getElementById('btnFailed');
+            const btnReserve = document.getElementById('btnReserve');
+
+            btnPickup.classList.add('hidden');
+            btnUpdate.classList.add('hidden');
+            btnDelivered.classList.add('hidden');
+            btnFailed.classList.add('hidden');
+            btnReserve.classList.add('hidden');
+
+            if (status === 'reserved') {
+                btnPickup.classList.remove('hidden');
+            } else if (status === 'in_transit') {
+                btnUpdate.classList.remove('hidden');
+                btnDelivered.classList.remove('hidden');
+                btnFailed.classList.remove('hidden');
+            }
+        }
+
+        async function reserveJob() {
+            try {
+                const response = await fetch(`${API_BASE}/drone/reserve`, {
+                    method: 'POST',
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+
+                const data = await response.json();
+                
+                if (data.success) {
+                    showToast('✅ Job reserved successfully!');
+                    await refreshData();
+                } else {
+                    showToast('❌ ' + data.error, 'warning');
+                }
+            } catch (error) {
+                showToast('Error: ' + error.message, 'warning');
+            }
+        }
+
+        async function pickupOrder() {
+            try {
+                const response = await fetch(`${API_BASE}/drone/grab`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ fromLocation: 'origin' })
+                });
+
+                const data = await response.json();
+                
+                if (data.success) {
+                    showToast('✅ Order picked up!');
+                    await refreshData();
+                } else {
+                    showToast('❌ ' + data.error, 'warning');
+                }
+            } catch (error) {
+                showToast('Error: ' + error.message, 'warning');
+            }
+        }
+
+        async function updateLocation() {
+            const lat = prompt('Enter current latitude:', currentOrder?.currentLocation?.latitude || '');
+            const lng = prompt('Enter current longitude:', currentOrder?.currentLocation?.longitude || '');
+
+            if (!lat || !lng) return;
+
+            try {
+                const response = await fetch(`${API_BASE}/drone/location`, {
+                    method: 'PUT',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        latitude: parseFloat(lat),
+                        longitude: parseFloat(lng)
+                    })
+                });
+
+                const data = await response.json();
+                
+                if (data.success) {
+                    showToast('✅ Location updated!');
+                    await refreshData();
+                } else {
+                    showToast('❌ ' + data.error, 'warning');
+                }
+            } catch (error) {
+                showToast('Error: ' + error.message, 'warning');
+            }
+        }
+
+        async function markDelivered() {
+            if (!confirm('Mark order as delivered?')) return;
+
+            try {
+                const response = await fetch(`${API_BASE}/drone/order/status`, {
+                    method: 'PUT',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ status: 'delivered' })
+                });
+
+                const data = await response.json();
+                
+                if (data.success) {
+                    showToast('✅ Order marked as delivered!');
+                    await refreshData();
+                } else {
+                    showToast('❌ ' + data.error, 'warning');
+                }
+            } catch (error) {
+                showToast('Error: ' + error.message, 'warning');
+            }
+        }
+
+        async function markFailed() {
+            if (!confirm('Mark order as failed?')) return;
+
+            try {
+                const response = await fetch(`${API_BASE}/drone/order/status`, {
+                    method: 'PUT',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ status: 'failed' })
+                });
+
+                const data = await response.json();
+                
+                if (data.success) {
+                    showToast('Order marked as failed');
+                    await refreshData();
+                } else {
+                    showToast('❌ ' + data.error, 'warning');
+                }
+            } catch (error) {
+                showToast('Error: ' + error.message, 'warning');
+            }
+        }
+
+        async function submitOrder() {
+            showOrderModal();
+        }
+
+        function startAutoRefresh() {
+            stopAutoRefresh();
+            refreshInterval = setInterval(refreshData, 5000);
+        }
+
+        function stopAutoRefresh() {
+            if (refreshInterval) {
+                clearInterval(refreshInterval);
+                refreshInterval = null;
+            }
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Google Maps API Test</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .container {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            max-width: 800px;
+            width: 100%;
+            padding: 40px;
+        }
+        h1 {
+            color: #333;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        .status {
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+            font-size: 16px;
+            line-height: 1.6;
+        }
+        .success {
+            background: #d4edda;
+            border: 2px solid #28a745;
+            color: #155724;
+        }
+        .error {
+            background: #f8d7da;
+            border: 2px solid #dc3545;
+            color: #721c24;
+        }
+        .info {
+            background: #d1ecf1;
+            border: 2px solid #0c5460;
+            color: #0c5460;
+        }
+        #map {
+            width: 100%;
+            height: 400px;
+            border-radius: 8px;
+            margin-top: 20px;
+            border: 2px solid #ddd;
+        }
+        .instructions {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+        .instructions h3 {
+            color: #495057;
+            margin-bottom: 15px;
+        }
+        .instructions ol {
+            margin-left: 20px;
+        }
+        .instructions li {
+            margin: 10px 0;
+            color: #6c757d;
+        }
+        code {
+            background: #e9ecef;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: 'Courier New', monospace;
+            color: #e83e8c;
+        }
+        a {
+            color: #007bff;
+            text-decoration: none;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+        .back-link {
+            text-align: center;
+            margin-top: 20px;
+        }
+        .back-link a {
+            display: inline-block;
+            padding: 10px 20px;
+            background: #667eea;
+            color: white;
+            border-radius: 5px;
+            text-decoration: none;
+        }
+        .back-link a:hover {
+            background: #5568d3;
+            text-decoration: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1> Google Maps API Test</h1>
+        
+        <div id="status" class="status info">
+             Testing Google Maps API connection...
+        </div>
+
+        <div id="map"></div>
+
+        <div class="instructions">
+            <h3> How to Add Your API Key:</h3>
+            <ol>
+                <li>Go to <a href="https://console.cloud.google.com/" target="_blank">Google Cloud Console</a></li>
+                <li>Create a project (or select existing one)</li>
+                <li>Enable <strong>Maps JavaScript API</strong></li>
+                <li>Go to <strong>Credentials</strong> → Create <strong>API Key</strong></li>
+                <li>Copy your API key</li>
+                <li>Open <code>test-maps.html</code> in a text editor</li>
+                <li>Find the line with <code>YOUR_API_KEY</code> (near the bottom)</li>
+                <li>Replace <code>YOUR_API_KEY</code> with your actual key</li>
+                <li>Save and refresh this page</li>
+            </ol>
+            <p style="margin-top: 15px;">
+                <strong>Note:</strong> See <code>GOOGLE_MAPS_SETUP.md</code> for detailed instructions with screenshots.
+            </p>
+        </div>
+
+        <div class="back-link">
+            <a href="tracking.html">← Back to Tracking Page</a>
+            <a href="index.html" style="margin-left: 10px;">← Back to Main Page</a>
+        </div>
+    </div>
+
+    <script>
+        function initMap() {
+            try {
+                // Check if Google Maps API is available
+                if (typeof google === 'undefined' || !google.maps) {
+                    throw new Error('Google Maps API not loaded');
+                }
+
+                // Create a simple map
+                const map = new google.maps.Map(document.getElementById('map'), {
+                    center: { lat: 37.7749, lng: -122.4194 }, // San Francisco
+                    zoom: 12,
+                    mapTypeControl: true,
+                    streetViewControl: true,
+                });
+
+                // Add a marker
+                new google.maps.Marker({
+                    position: { lat: 37.7749, lng: -122.4194 },
+                    map: map,
+                    title: 'Test Marker',
+                    animation: google.maps.Animation.DROP
+                });
+
+                // Success!
+                document.getElementById('status').className = 'status success';
+                document.getElementById('status').innerHTML = `
+                    ✅ <strong>Success!</strong> Google Maps API is working correctly.<br>
+                    You can now use the tracking page. The map above shows San Francisco with a test marker.
+                `;
+
+                console.log('✅ Google Maps API loaded successfully');
+
+            } catch (error) {
+                // Error handling
+                document.getElementById('status').className = 'status error';
+                document.getElementById('status').innerHTML = `
+                    ❌ <strong>Error:</strong> ${error.message}<br><br>
+                    <strong>Possible causes:</strong><br>
+                    • API key is missing or invalid (still says YOUR_API_KEY)<br>
+                    • Maps JavaScript API is not enabled in your Google Cloud project<br>
+                    • API key restrictions are blocking localhost<br>
+                    • Invalid API key format<br><br>
+                    <strong>Solution:</strong> Follow the instructions below to add your API key.
+                `;
+
+                document.getElementById('map').style.display = 'none';
+                console.error('❌ Google Maps API error:', error);
+            }
+        }
+
+        // Handle script load error
+        window.gm_authFailure = function() {
+            document.getElementById('status').className = 'status error';
+            document.getElementById('status').innerHTML = `
+                ❌ <strong>Authentication Failed!</strong><br><br>
+                Your API key is invalid or has restrictions that prevent it from loading.<br><br>
+                <strong>Common issues:</strong><br>
+                • Using "YOUR_API_KEY" instead of a real API key<br>
+                • API key restrictions blocking localhost<br>
+                • Maps JavaScript API not enabled<br>
+                • Billing not enabled (required for Maps API)<br><br>
+                Check the browser console for more details.
+            `;
+            document.getElementById('map').style.display = 'none';
+        };
+
+        // Timeout check
+        setTimeout(() => {
+            if (typeof google === 'undefined') {
+                document.getElementById('status').className = 'status error';
+                document.getElementById('status').innerHTML = `
+                    ⏱️ <strong>Timeout:</strong> Google Maps API failed to load within 5 seconds.<br><br>
+                    <strong>This usually means:</strong><br>
+                    • You haven't replaced YOUR_API_KEY with a real key<br>
+                    • Network connectivity issues<br>
+                    • Script blocked by browser extension<br><br>
+                    Check the browser console (F12) for error messages.
+                `;
+                document.getElementById('map').style.display = 'none';
+            }
+        }, 5000);
+    </script>
+
+    <!-- Google Maps API -->
+    <!-- IMPORTANT: Replace YOUR_API_KEY with your actual Google Maps API key -->
+    <script async defer
+        src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAdlfTHUOg2PbRxoIDr78hCI9feJtWfnrU&callback=initMap"
+        onerror="document.getElementById('status').className='status error'; document.getElementById('status').innerHTML='❌ Failed to load Google Maps script. Check your internet connection and API key.';">
+    </script>
+</body>
+</html>

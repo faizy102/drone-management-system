@@ -1,0 +1,13 @@
+import { Router } from 'express';
+import { authenticate, authorize } from '../middleware/auth';
+import { UserType } from '../types';
+import * as enduserController from '../controllers/enduserController';
+import { validateBody, createOrderSchema } from '../middleware/validation';
+const router = Router();
+router.use(authenticate);
+router.use(authorize(UserType.ENDUSER));
+router.post('/orders', validateBody(createOrderSchema), enduserController.submitOrder);
+router.get('/orders', enduserController.getMyOrders);
+router.get('/orders/:orderId', enduserController.getOrderDetails);
+router.delete('/orders/:orderId', enduserController.withdrawOrder);
+export default router;
