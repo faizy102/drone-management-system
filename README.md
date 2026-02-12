@@ -338,7 +338,7 @@ The project includes comprehensive test coverage:
 
 Coverage report is generated in the `coverage/` directory.
 
-## 🏗️ Architecture
+## Architecture
 
 ### Project Structure
 
@@ -385,7 +385,7 @@ IDLE → RESERVED → IN_TRANSIT → IDLE
                              → BROKEN → IDLE (fixed by admin)
 ```
 
-## 🔒 Security Features
+## Security Features
 
 - **Helmet.js**: Security headers
 - **CORS**: Cross-Origin Resource Sharing configuration
